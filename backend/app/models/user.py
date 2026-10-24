@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -23,6 +24,14 @@ class User(Base):
         default=utc_now,
         onupdate=utc_now,
         nullable=False,
+    )
+
+    # Relationships
+    analyses = relationship(
+        "Analysis",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        order_by="Analysis.created_at.desc()",
     )
 
     def __repr__(self) -> str:

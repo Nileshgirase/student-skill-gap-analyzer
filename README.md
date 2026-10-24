@@ -19,8 +19,8 @@ A full-stack, portfolio-level web application designed to help students analyze 
 | :--- | :--- | :--- |
 | **Phase 1** | **Backend Foundation (FastAPI, SQLite, Health Endpoint, Pytest)** | **Completed** |
 | **Phase 2** | **Authentication & User Management (Argon2, JWT, /api/auth/me)** | **Completed** |
-| Phase 3 | Analysis Input & Storage (Company, Role, Student Skills) | Pending approval |
-| Phase 4 | First Verified Source Connector (Normalized Job Architecture) | Pending |
+| **Phase 3** | **Analysis Input & Persistence (Ownership Scoping, Models, Endpoints)** | **Completed** |
+| Phase 4 | First Verified Source Connector (Normalized Job Architecture) | Pending approval |
 | Phase 5 | Multi-Source Connectors & Freshness Tracking | Pending |
 | Phase 6 | Skill Extraction & Gap Analysis Engine | Pending |
 | Phase 7 | Personalized Learning Roadmap Generator | Pending |
@@ -108,7 +108,7 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📡 API Endpoints (Phases 1 & 2)
+## 📡 API Endpoints (Phases 1, 2 & 3)
 
 | Method | Endpoint | Auth Required | Description |
 | :--- | :--- | :---: | :--- |
@@ -117,6 +117,11 @@ uvicorn app.main:app --reload
 | `POST` | `/api/auth/register` | No | Register new student, hashes password with Argon2, returns JWT |
 | `POST` | `/api/auth/login` | No | Authenticate credentials and receive JWT bearer token |
 | `GET` | `/api/auth/me` | **Yes** (Bearer) | Get current student user profile (safe, never returns password) |
+| `POST` | `/api/analyses` | **Yes** (Bearer) | Create new analysis (company, role, study hours, self-reported skills) |
+| `GET` | `/api/analyses` | **Yes** (Bearer) | List all prior analyses for authenticated student |
+| `GET` | `/api/analyses/{id}` | **Yes** (Bearer) | Retrieve analysis by ID with skills (enforces tenant isolation) |
+| `DELETE` | `/api/analyses/{id}` | **Yes** (Bearer) | Delete owned analysis with cascade deletion of related skills |
+| `POST` | `/api/analyses/{id}/student-skills` | **Yes** (Bearer) | Replace or update student skills for an owned analysis |
 
 ---
 
