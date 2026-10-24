@@ -178,6 +178,16 @@ def test_api_search_jobs_integration(client, db_session, monkeypatch):
         lambda self: mock_client,
     )
 
+    # Mock LeverConnector as well to prevent external HTTP calls during automated tests
+    mock_lever_client = MagicMock(spec=httpx.Client)
+    mock_lever_res = MagicMock(spec=httpx.Response)
+    mock_lever_res.status_code = 404
+    mock_lever_client.get.return_value = mock_lever_res
+    monkeypatch.setattr(
+        "app.connectors.lever.LeverConnector._get_client",
+        lambda self: mock_lever_client,
+    )
+
     # 4. Trigger search-jobs endpoint
     search_res = client.post(f"/api/analyses/{analysis_id}/search-jobs", headers=headers)
     assert search_res.status_code == 200

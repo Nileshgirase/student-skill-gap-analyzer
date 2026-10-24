@@ -26,6 +26,11 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         validation_alias="FRONTEND_ORIGIN",
     )
+    job_freshness_days: int = Field(
+        default=30,
+        validation_alias="JOB_FRESHNESS_DAYS",
+        description="Threshold in days after which a posting is flagged as stale",
+    )
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_PATH) if ENV_PATH.exists() else ".env",
