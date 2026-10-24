@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel, Field, ConfigDict, field_validator
+from app.schemas.job import JobSnapshotResponse
 
 ProficiencyType = Literal["beginner", "intermediate", "advanced", "unknown"]
 
@@ -94,6 +95,7 @@ class AnalysisDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     student_skills: list[SkillResponseSchema] = []
+    job_snapshots: list[JobSnapshotResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -12,8 +12,10 @@ from app.schemas.analysis import (
     StudentSkillsUpdateRequest,
     SkillResponseSchema,
 )
+from app.schemas.job import JobSearchResponse
 from app.security.dependencies import get_current_user
 from app.services.skill_normalizer import canonicalize_skill_name
+from app.services.job_search_service import execute_job_search
 
 router = APIRouter(prefix="/api/analyses", tags=["Analyses"])
 
@@ -196,3 +198,39 @@ def update_student_skills(
         db.refresh(s)
 
     return new_skills
+
+
+@router.post(
+    "/{analysis_id}/search-jobs",
+    response_model=JobSearchResponse,
+    summary="Search Permitted Sources for Verified Jobs",
+    description=(
+        "Executes live retrieval against permitted source connectors for the target company and role. "
+        "Deduplicates results, records source evidence, and updates the analysis verification status."
+    ),
+)
+def search_jobs_for_analysis(
+    analysis_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    analysis = (
+        db.query(Analysis)
+        .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)
+        .first()
+    )
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found.",
+        )
+
+    status_code, message, snapshots = execute_job_search(analysis=analysis, db=db)
+
+    return JobSearchResponse(
+        status=status_code,
+        company=analysis.company_name,
+        target_role=analysis.target_role,
+        message=message,
+        jobs=snapshots,
+    )

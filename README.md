@@ -20,8 +20,8 @@ A full-stack, portfolio-level web application designed to help students analyze 
 | **Phase 1** | **Backend Foundation (FastAPI, SQLite, Health Endpoint, Pytest)** | **Completed** |
 | **Phase 2** | **Authentication & User Management (Argon2, JWT, /api/auth/me)** | **Completed** |
 | **Phase 3** | **Analysis Input & Persistence (Ownership Scoping, Models, Endpoints)** | **Completed** |
-| Phase 4 | First Verified Source Connector (Normalized Job Architecture) | Pending approval |
-| Phase 5 | Multi-Source Connectors & Freshness Tracking | Pending |
+| **Phase 4** | **First Verified Source Connector (Normalized Job Architecture, Greenhouse)** | **Completed** |
+| Phase 5 | Multi-Source Connectors & Freshness Tracking | Pending approval |
 | Phase 6 | Skill Extraction & Gap Analysis Engine | Pending |
 | Phase 7 | Personalized Learning Roadmap Generator | Pending |
 | Phase 8 | Frontend Web Application (React + Vite + Tailwind CSS) | Pending |
@@ -108,7 +108,7 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📡 API Endpoints (Phases 1, 2 & 3)
+## 📡 API Endpoints (Phases 1, 2, 3 & 4)
 
 | Method | Endpoint | Auth Required | Description |
 | :--- | :--- | :---: | :--- |
@@ -119,9 +119,10 @@ uvicorn app.main:app --reload
 | `GET` | `/api/auth/me` | **Yes** (Bearer) | Get current student user profile (safe, never returns password) |
 | `POST` | `/api/analyses` | **Yes** (Bearer) | Create new analysis (company, role, study hours, self-reported skills) |
 | `GET` | `/api/analyses` | **Yes** (Bearer) | List all prior analyses for authenticated student |
-| `GET` | `/api/analyses/{id}` | **Yes** (Bearer) | Retrieve analysis by ID with skills (enforces tenant isolation) |
-| `DELETE` | `/api/analyses/{id}` | **Yes** (Bearer) | Delete owned analysis with cascade deletion of related skills |
+| `GET` | `/api/analyses/{id}` | **Yes** (Bearer) | Retrieve analysis by ID with skills and snapshots |
+| `DELETE` | `/api/analyses/{id}` | **Yes** (Bearer) | Delete owned analysis with cascade deletion of related records |
 | `POST` | `/api/analyses/{id}/student-skills` | **Yes** (Bearer) | Replace or update student skills for an owned analysis |
+| `POST` | `/api/analyses/{id}/search-jobs` | **Yes** (Bearer) | Retrieve verified job postings from permitted ATS sources |
 
 ---
 

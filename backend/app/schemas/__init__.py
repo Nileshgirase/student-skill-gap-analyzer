@@ -15,6 +15,10 @@ from app.schemas.analysis import (
     AnalysisDetailResponse,
     StudentSkillsUpdateRequest,
 )
+from app.schemas.job import (
+    JobSnapshotResponse,
+    JobSearchResponse,
+)
 
 __all__ = [
     "UserRegisterRequest",
@@ -27,4 +31,6 @@ __all__ = [
     "AnalysisSummaryResponse",
     "AnalysisDetailResponse",
     "StudentSkillsUpdateRequest",
+    "JobSnapshotResponse",
+    "JobSearchResponse",
 ]
