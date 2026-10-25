@@ -114,7 +114,8 @@ e:\Skill Analyzer\
 │   │   │   ├── required_skill.py   # Extracted skills with sentence evidence quotes
 │   │   │   └── roadmap_item.py     # Generated weekly curriculum items & status
 │   │   ├── resources/              # Free educational catalog
-│   │   │   └── learning_resources.json  # Curated catalog with verified free URLs
+│   │   │   ├── learning_resources.json  # Curated catalog with verified free URLs
+│   │   │   └── archived_job_snapshots.json # Verified historical postings archive (Approach 1)
 │   │   ├── routes/                 # FastAPI API route controllers
 │   │   │   ├── health.py           # /api/health with SELECT 1 SQLite probe
 │   │   │   ├── auth.py             # /api/auth/register, login, me
@@ -131,7 +132,7 @@ e:\Skill Analyzer\
 │   │   ├── config.py               # Pydantic BaseSettings loading from .env
 │   │   ├── database.py             # SQLite engine & session maker
 │   │   └── main.py                 # FastAPI application factory & CORS setup
-│   ├── tests/                      # Automated test suite (49 passing tests)
+│   ├── tests/                      # Automated test suite (53 passing tests)
 │   │   ├── conftest.py             # In-memory SQLite fixtures & TestClient
 │   │   ├── test_health.py          # Health-check probe tests
 │   │   ├── test_auth.py            # Registration, login, JWT validation tests
@@ -140,7 +141,8 @@ e:\Skill Analyzer\
 │   │   ├── test_lever_and_aggregation.py # Lever ATS & multi-source dedup tests
 │   │   ├── test_skill_extraction_and_gap.py # Skill regex disambiguation & gap tests
 │   │   ├── test_roadmap.py         # Weekly hour budget & curriculum tests
-│   │   └── test_e2e_workflow.py    # Comprehensive full-student journey e2e test
+│   │   ├── test_e2e_workflow.py    # Comprehensive full-student journey e2e test
+│   │   └── test_cached_snapshots.py # Historical/cached last posting tests (Approach 1)
 │   ├── .env.example                # Backend configuration template
 │   ├── pytest.ini                  # Pytest configuration & warning filters
 │   └── requirements.txt            # Python dependencies
@@ -253,71 +255,16 @@ In **Terminal 1** (with virtual environment activated):
 pytest -v -c backend/pytest.ini backend/tests
 ```
 
-### Verified Test Suite Breakdown (49 Passing Tests)
+### Verified Test Suite Breakdown (53 Passing Tests)
 
 ```text
 backend/tests/test_analyses.py (7 tests)
-  ✓ test_create_analysis_success
-  ✓ test_create_analysis_validation_failure
-  ✓ test_list_analyses_ownership_scoping
-  ✓ test_get_analysis_by_id_owner_vs_non_owner
-  ✓ test_delete_analysis_and_cascade
-  ✓ test_update_student_skills_endpoint
-  ✓ test_unauthenticated_access_rejected
-
-backend/tests/test_auth.py (10 tests)
-  ✓ test_register_success
-  ✓ test_register_duplicate_email
-  ✓ test_register_validation_errors
-  ✓ test_login_success
-  ✓ test_login_wrong_password
-  ✓ test_login_nonexistent_email
-  ✓ test_get_current_user_me_authenticated
-  ✓ test_get_current_user_me_unauthenticated
-  ✓ test_get_current_user_me_invalid_token
-  ✓ test_get_current_user_me_expired_token
-
-backend/tests/test_connectors.py (9 tests)
-  ✓ test_html_cleaning
-  ✓ test_calculate_role_relevance
-  ✓ test_greenhouse_connector_success_with_mock
-  ✓ test_greenhouse_connector_company_not_verified_404
-  ✓ test_greenhouse_connector_no_matching_jobs
-  ✓ test_greenhouse_connector_timeout_handling
-  ✓ test_greenhouse_connector_upstream_500_handling
-  ✓ test_api_search_jobs_integration
-  ✓ test_api_search_jobs_ownership_check
-
-backend/tests/test_health.py (4 tests)
-  ✓ test_root_endpoint
-  ✓ test_health_check_healthy
-  ✓ test_database_connection_check
-  ✓ test_health_check_degraded_when_db_down
-
-backend/tests/test_lever_and_aggregation.py (6 tests)
-  ✓ test_lever_connector_success_with_mock
-  ✓ test_lever_connector_404_handling
-  ✓ test_lever_connector_timeout_handling
-  ✓ test_freshness_policy_evaluation
-  ✓ test_multi_source_deduplication
-  ✓ test_multi_source_aggregation_graceful_failure
-
-backend/tests/test_roadmap.py (5 tests)
-  ✓ test_roadmap_prioritization_and_weekly_budget
-  ✓ test_roadmap_catalog_resource_provenance
-  ✓ test_api_create_and_get_roadmap_integration
-  ✓ test_api_patch_roadmap_item_progress_and_ownership
-  ✓ test_create_roadmap_without_snapshots_fails_400
-
-backend/tests/test_skill_extraction_and_gap.py (7 tests)
-  ✓ test_extract_skills_multiword_and_evidence
-  ✓ test_avoid_short_symbol_false_positives
-  ✓ test_coverage_calculation_formula
-  ✓ test_zero_required_skills_yields_null_coverage
-  ✓ test_api_run_gap_analysis_integration
-  ✓ test_run_gap_analysis_without_snapshots_fails_400
-  ✓ test_run_gap_analysis_ownership_isolation
-
+...
+backend/tests/test_cached_snapshots.py (4 tests)
+  ✓ test_find_cached_snapshots_from_catalog
+  ✓ test_find_cached_snapshots_from_database_precedence
+  ✓ test_apply_cached_snapshot_to_analysis
+  ✓ test_api_use_cached_posting_and_run_gap_analysis
 backend/tests/test_e2e_workflow.py (1 test)
   ✓ test_full_student_e2e_journey (Complete end-to-end integration lifecycle)
 ```
@@ -404,7 +351,12 @@ All protected endpoints require an `Authorization: Bearer <token>` header.
 #### `POST /api/analyses/{id}/search-jobs`
 - **Auth**: Bearer Token
 - **Action**: Queries configured ATS connectors (Greenhouse, Lever) in priority sequence. Normalizes postings, applies token relevance filters, checks posting freshness against `JOB_FRESHNESS_DAYS = 30`, and stores deduplicated snapshots in SQLite.
-- **Response**: `200 OK` with `status: "verified_jobs_found"` or honest fallbacks (`company_not_verified`, `no_matching_jobs`, `source_unavailable`).
+- **Response**: `200 OK` with `status: "verified_jobs_found"` or honest fallbacks (`company_not_verified`, `no_matching_jobs`, `source_unavailable`). If no live jobs are found, returns `has_cached_snapshots: true` when a verified historical posting is available.
+
+#### `POST /api/analyses/{id}/use-cached-posting` (Approach 1)
+- **Auth**: Bearer Token (Owner only)
+- **Action**: Attaches the most recent verified historical snapshot (from the local database cache or verified archive catalog) to the analysis when live feeds have no open listings. Marks the snapshot with `is_stale: true`, `verification_status: "archived_snapshot"`, and an explicit provenance note.
+- **Response**: `200 OK` with `status: "archived_jobs_found"`, allowing immediate evidence-backed gap analysis and roadmap generation.
 
 #### `POST /api/analyses/{id}/run-gap-analysis`
 - **Auth**: Bearer Token

@@ -54,6 +54,12 @@ const Dashboard = () => {
             <CheckCircle className="w-3.5 h-3.5" /> Verified Data
           </span>
         );
+      case 'archived_jobs_found':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <CheckCircle className="w-3.5 h-3.5" /> Archived Data
+          </span>
+        );
       case 'no_matching_jobs':
       case 'company_not_verified':
         return (

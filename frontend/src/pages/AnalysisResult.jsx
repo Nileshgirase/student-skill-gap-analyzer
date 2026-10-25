@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getAnalysis, runGapAnalysis, searchJobs } from '../api/analyses';
-import { Building2, Briefcase, RefreshCw, MapPin, ExternalLink, Calendar, AlertTriangle, ArrowRight, BookOpen, Layers } from 'lucide-react';
+import { getAnalysis, runGapAnalysis, searchJobs, useCachedPosting } from '../api/analyses';
+import { Building2, Briefcase, RefreshCw, MapPin, ExternalLink, Calendar, AlertTriangle, ArrowRight, BookOpen, Layers, Clock, History } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import JobSourceCard from '../components/JobSourceCard';
@@ -50,6 +50,18 @@ const AnalysisResult = () => {
       await loadData();
     } catch (err) {
       alert(err.response?.data?.detail || 'Failed to refresh job postings.');
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  const handleUseCachedPosting = async () => {
+    setActionLoading('Attaching verified historical snapshot...');
+    try {
+      await useCachedPosting(analysisId);
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to attach cached posting.');
     } finally {
       setActionLoading('');
     }
@@ -134,6 +146,45 @@ const AnalysisResult = () => {
             {analysis.status === 'source_unavailable' &&
               `The upstream career feeds timed out or were temporarily unreachable. Please retry shortly.`}
           </p>
+
+          {analysis.has_cached_snapshots && (
+            <div className="mt-6 p-4 sm:p-5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl text-left shadow-sm">
+              <div className="flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                      Approach 1 Available
+                    </span>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Last Known Verified Posting Found
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    While no open postings were found on live ATS feeds today, we located a verified historical posting for{' '}
+                    <strong className="text-slate-900">{analysis.cached_snapshot_title || analysis.target_role}</strong> at{' '}
+                    <strong className="text-slate-900">{analysis.company_name}</strong>
+                    {analysis.cached_snapshot_date && ` (recorded ${new Date(analysis.cached_snapshot_date).toLocaleDateString()})`}.
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Requirements will be extracted with real evidence quotes and labeled as an archived snapshot.
+                  </p>
+                  <div className="mt-3.5">
+                    <button
+                      onClick={handleUseCachedPosting}
+                      disabled={!!actionLoading}
+                      className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 transition disabled:opacity-50"
+                    >
+                      <History className="w-4 h-4" />
+                      <span>{actionLoading ? 'Loading Archive...' : 'Analyze Last Known Posting'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button

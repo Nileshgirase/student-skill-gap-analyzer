@@ -21,11 +21,15 @@ const JobSourceCard = ({ job }) => {
             <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
               {job.employer_name}
             </span>
-            {job.is_stale && (
+            {job.verification_status === 'archived_snapshot' ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
+                <AlertTriangle className="w-3 h-3 text-indigo-600" /> Archived Snapshot
+              </span>
+            ) : job.is_stale ? (
               <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
                 <AlertTriangle className="w-3 h-3" /> Stale Posting
               </span>
-            )}
+            ) : null}
           </div>
           <h3 className="text-lg font-bold text-slate-900">{job.job_title}</h3>
         </div>

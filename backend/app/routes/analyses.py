@@ -17,7 +17,11 @@ from app.schemas.job import JobSearchResponse
 from app.schemas.gap_analysis import GapAnalysisResponse
 from app.security.dependencies import get_current_user
 from app.services.skill_normalizer import canonicalize_skill_name
-from app.services.job_search_service import execute_job_search
+from app.services.job_search_service import (
+    execute_job_search,
+    find_cached_snapshots,
+    apply_cached_snapshot_to_analysis,
+)
 from app.services.skill_extractor import extract_skills_from_text
 from app.services.gap_analyzer import compute_skill_gap_analysis
 
@@ -124,7 +128,21 @@ def get_analysis(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Analysis not found.",
         )
-    return analysis
+
+    response_data = AnalysisDetailResponse.model_validate(analysis)
+    if not analysis.job_snapshots:
+        cached_matches = find_cached_snapshots(
+            company_name=analysis.company_name,
+            target_role=analysis.target_role,
+            db=db,
+            exclude_analysis_id=analysis.id,
+        )
+        if cached_matches:
+            response_data.has_cached_snapshots = True
+            response_data.cached_snapshot_title = cached_matches[0]["job_title"]
+            response_data.cached_snapshot_date = cached_matches[0]["fetched_at"]
+
+    return response_data
 
 
 @router.delete(
@@ -231,12 +249,82 @@ def search_jobs_for_analysis(
 
     status_code, message, snapshots = execute_job_search(analysis=analysis, db=db)
 
+    has_cached = False
+    cached_count = 0
+    cached_title = None
+    cached_date = None
+    cached_emp = None
+
+    if not snapshots:
+        cached_matches = find_cached_snapshots(
+            company_name=analysis.company_name,
+            target_role=analysis.target_role,
+            db=db,
+            exclude_analysis_id=analysis.id,
+        )
+        if cached_matches:
+            has_cached = True
+            cached_count = len(cached_matches)
+            cached_title = cached_matches[0]["job_title"]
+            cached_date = cached_matches[0]["fetched_at"]
+            cached_emp = cached_matches[0]["employer_name"]
+
     return JobSearchResponse(
         status=status_code,
         company=analysis.company_name,
         target_role=analysis.target_role,
         message=message,
         jobs=snapshots,
+        has_cached_snapshots=has_cached,
+        cached_snapshot_count=cached_count,
+        cached_snapshot_title=cached_title,
+        cached_snapshot_date=cached_date,
+        cached_snapshot_employer=cached_emp,
+    )
+
+
+@router.post(
+    "/{analysis_id}/use-cached-posting",
+    response_model=JobSearchResponse,
+    summary="Use Last Known / Cached Job Posting",
+    description=(
+        "Attaches the most recent verified historical posting for the target company and role "
+        "when live career feeds have no open positions. Marks the posting as an archived snapshot."
+    ),
+)
+def use_cached_posting(
+    analysis_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    analysis = (
+        db.query(Analysis)
+        .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)
+        .first()
+    )
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found.",
+        )
+
+    snapshots = apply_cached_snapshot_to_analysis(analysis=analysis, db=db)
+    if not snapshots:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                f"No verified historical or cached postings found for '{analysis.company_name}' "
+                f"matching '{analysis.target_role}'."
+            ),
+        )
+
+    return JobSearchResponse(
+        status="archived_jobs_found",
+        company=analysis.company_name,
+        target_role=analysis.target_role,
+        message=f"Attached last known verified posting: '{snapshots[0].job_title}' ({snapshots[0].source_name}).",
+        jobs=snapshots,
+        has_cached_snapshots=False,
     )
 
 

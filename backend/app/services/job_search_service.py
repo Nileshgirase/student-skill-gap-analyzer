@@ -1,15 +1,175 @@
+import json
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models.analysis import Analysis
 from app.models.job_snapshot import JobSnapshot
 from app.connectors.base import BaseJobConnector, NormalizedJob
-from app.connectors.greenhouse import GreenhouseConnector
+from app.connectors.greenhouse import GreenhouseConnector, calculate_role_relevance
 from app.connectors.lever import LeverConnector
 
 logger = logging.getLogger(__name__)
+
+ARCHIVED_CATALOG_PATH = Path(__file__).resolve().parent.parent / "resources" / "archived_job_snapshots.json"
+
+
+def get_archived_catalog() -> list[dict]:
+    """Loads the curated catalog of verified historical job postings."""
+    if not ARCHIVED_CATALOG_PATH.exists():
+        return []
+    try:
+        with open(ARCHIVED_CATALOG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        logger.warning("Failed to load archived job catalog: %s", exc)
+        return []
+
+
+def find_cached_snapshots(
+    company_name: str,
+    target_role: str,
+    db: Session,
+    exclude_analysis_id: int | None = None,
+) -> list[dict]:
+    """
+    Finds historical or cached job snapshots matching the company name and target role.
+    Checks:
+    1. Existing verified snapshots stored in the local SQLite database.
+    2. Curated catalog of verified historical postings in archived_job_snapshots.json.
+    Returns matched postings sorted by fetch date descending.
+    """
+    matches: list[dict] = []
+    clean_company = company_name.strip().lower()
+
+    # 1. Check local SQLite DB
+    query = db.query(JobSnapshot).filter(
+        JobSnapshot.verification_status.in_(["verified", "archived_snapshot"])
+    )
+    if exclude_analysis_id:
+        query = query.filter(JobSnapshot.analysis_id != exclude_analysis_id)
+
+    db_snapshots = query.order_by(JobSnapshot.fetched_at.desc()).all()
+    for snap in db_snapshots:
+        snap_emp = snap.employer_name.strip().lower()
+        if clean_company in snap_emp or snap_emp in clean_company:
+            is_rel, _ = calculate_role_relevance(snap.job_title, target_role)
+            if is_rel:
+                matches.append({
+                    "source": "database_cache",
+                    "employer_name": snap.employer_name,
+                    "job_title": snap.job_title,
+                    "source_name": snap.source_name,
+                    "source_url": snap.source_url,
+                    "source_type": snap.source_type,
+                    "location": snap.location,
+                    "employment_type": snap.employment_type,
+                    "description_text": snap.description_text,
+                    "posted_at": snap.posted_at,
+                    "fetched_at": snap.fetched_at,
+                    "content_hash": snap.content_hash,
+                })
+
+    # 2. Check archived catalog if no DB match or to supplement
+    catalog = get_archived_catalog()
+    for item in catalog:
+        cat_emp = item.get("employer_name", "").strip().lower()
+        if clean_company in cat_emp or cat_emp in clean_company:
+            is_rel, _ = calculate_role_relevance(item.get("job_title", ""), target_role)
+            if is_rel:
+                if not any(
+                    m["employer_name"].lower() == cat_emp and m["job_title"].lower() == item.get("job_title", "").lower()
+                    for m in matches
+                ):
+                    posted = None
+                    if item.get("posted_at"):
+                        try:
+                            posted = datetime.fromisoformat(item["posted_at"])
+                        except Exception:
+                            posted = None
+                    fetched = datetime.now(timezone.utc)
+                    if item.get("fetched_at"):
+                        try:
+                            fetched = datetime.fromisoformat(item["fetched_at"])
+                        except Exception:
+                            fetched = datetime.now(timezone.utc)
+
+                    matches.append({
+                        "source": "archived_catalog",
+                        "employer_name": item["employer_name"],
+                        "job_title": item["job_title"],
+                        "source_name": item["source_name"],
+                        "source_url": item["source_url"],
+                        "source_type": item.get("source_type", "archived_posting"),
+                        "location": item.get("location"),
+                        "employment_type": item.get("employment_type"),
+                        "description_text": item["description_text"],
+                        "posted_at": posted,
+                        "fetched_at": fetched,
+                        "content_hash": None,
+                    })
+
+    return matches
+
+
+def apply_cached_snapshot_to_analysis(
+    analysis: Analysis,
+    db: Session,
+    cached_match: dict | None = None,
+) -> list[JobSnapshot]:
+    """
+    Attaches a historical or cached job posting to an analysis, marking it explicitly
+    as an archived snapshot with freshness warning notes.
+    """
+    if cached_match is None:
+        matches = find_cached_snapshots(
+            company_name=analysis.company_name,
+            target_role=analysis.target_role,
+            db=db,
+            exclude_analysis_id=analysis.id,
+        )
+        if not matches:
+            return []
+        cached_match = matches[0]
+
+    # Remove any existing snapshots and skills for this analysis
+    db.query(JobSnapshot).filter(JobSnapshot.analysis_id == analysis.id).delete()
+
+    orig_date = (
+        cached_match["fetched_at"].strftime("%Y-%m-%d")
+        if isinstance(cached_match.get("fetched_at"), datetime)
+        else "past posting"
+    )
+
+    archived_note = (
+        f"Archived snapshot loaded from last verified posting on {orig_date}. "
+        "This requisition was previously verified from public career sources but may no longer be actively hiring."
+    )
+
+    snapshot = JobSnapshot(
+        analysis_id=analysis.id,
+        source_name=cached_match["source_name"],
+        source_url=cached_match["source_url"],
+        source_type="archived_snapshot",
+        employer_name=cached_match["employer_name"],
+        job_title=cached_match["job_title"],
+        location=cached_match.get("location"),
+        employment_type=cached_match.get("employment_type"),
+        description_text=cached_match["description_text"],
+        fetched_at=datetime.now(timezone.utc),
+        posted_at=cached_match.get("posted_at"),
+        content_hash=cached_match.get("content_hash"),
+        is_stale=True,
+        verification_status="archived_snapshot",
+        verification_notes=archived_note,
+    )
+    db.add(snapshot)
+    analysis.status = "archived_jobs_found"
+    db.commit()
+    db.refresh(snapshot)
+    return [snapshot]
 
 
 def get_default_connectors() -> list[BaseJobConnector]:

@@ -30,3 +30,8 @@ class JobSearchResponse(BaseModel):
     target_role: str
     message: str
     jobs: list[JobSnapshotResponse] = []
+    has_cached_snapshots: bool = False
+    cached_snapshot_count: int = 0
+    cached_snapshot_title: str | None = None
+    cached_snapshot_date: datetime | None = None
+    cached_snapshot_employer: str | None = None

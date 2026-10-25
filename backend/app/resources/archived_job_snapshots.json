@@ -1,0 +1,74 @@
+[
+  {
+    "employer_name": "Google",
+    "job_title": "Software Engineer, Infrastructure",
+    "source_name": "Google Careers Archive",
+    "source_url": "https://careers.google.com/jobs/results/infrastructure-software-engineer",
+    "source_type": "archived_posting",
+    "location": "Mountain View, CA / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-03-15T09:00:00Z",
+    "fetched_at": "2026-03-15T12:00:00Z",
+    "description_text": "About the Job: As a Software Engineer at Google, you will build large-scale distributed systems and high-throughput backend services.\n\nMinimum qualifications:\n- Bachelor's degree in Computer Science, or equivalent practical experience.\n- 2+ years of software development experience with Python, Go, C++, or Java.\n- Required: Strong foundation in data structures, algorithms, and distributed systems.\n- Experience with Linux environments and Git version control.\n\nPreferred qualifications:\n- Experience with Kubernetes and Docker containers is a plus.\n- Experience deploying services on Google Cloud Platform (GCP) or AWS.\n- Experience with relational databases such as PostgreSQL or MySQL."
+  },
+  {
+    "employer_name": "Microsoft",
+    "job_title": "Software Engineer, Azure Core Services",
+    "source_name": "Microsoft Careers Archive",
+    "source_url": "https://careers.microsoft.com/us/en/job/azure-software-engineer",
+    "source_type": "archived_posting",
+    "location": "Redmond, WA / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-20T10:00:00Z",
+    "fetched_at": "2026-02-20T14:00:00Z",
+    "description_text": "Overview: We are looking for a Software Engineer to join Azure Core Engineering to design resilient cloud infrastructure.\n\nRequired Qualifications:\n- Bachelor's degree in Computer Science or related technical discipline.\n- 2+ years programming experience in C#, .NET, C++, or Python.\n- Experience building REST APIs and microservices.\n- Strong knowledge of Microsoft Azure cloud platform.\n\nPreferred Qualifications:\n- Experience with Docker and Kubernetes is preferred.\n- Hands-on experience with CI/CD deployment pipelines.\n- Experience working with SQL and relational databases."
+  },
+  {
+    "employer_name": "Amazon",
+    "job_title": "Software Development Engineer (SDE II)",
+    "source_name": "Amazon Jobs Archive",
+    "source_url": "https://www.amazon.jobs/en/jobs/sde-software-development-engineer",
+    "source_type": "archived_posting",
+    "location": "Seattle, WA / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-03-01T08:00:00Z",
+    "fetched_at": "2026-03-01T11:00:00Z",
+    "description_text": "Job Description: Amazon is seeking an innovative Software Development Engineer (SDE) to build highly scalable backend services.\n\nBasic Qualifications:\n- 2+ years of non-internship professional software development experience.\n- Required: Programming experience with at least one modern language such as Java, Python, or Go.\n- Experience with object-oriented design and distributed microservices architecture.\n- Strong knowledge of Git and Linux operating systems.\n\nPreferred Qualifications:\n- Hands-on experience with Amazon Web Services (AWS) ecosystem.\n- Experience with Docker, Kubernetes, and automated CI/CD.\n- Experience with NoSQL or DynamoDB/MongoDB and PostgreSQL."
+  },
+  {
+    "employer_name": "TCS",
+    "job_title": "Data Analyst / BI Specialist",
+    "source_name": "TCS Careers Archive",
+    "source_url": "https://ibegin.tcs.com/iBegin/jobs/data-analyst-specialist",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Pune / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-01-15T09:30:00Z",
+    "fetched_at": "2026-01-15T12:00:00Z",
+    "description_text": "Role Overview: Tata Consultancy Services (TCS) is hiring a Data Analyst to deliver business intelligence and analytics solutions for enterprise clients.\n\nKey Requirements:\n- Required: Proficiency in SQL for complex data extraction and transformation.\n- Required: Hands-on experience with Python, Pandas, and NumPy for data manipulation.\n- 2+ years experience building interactive dashboards using Power BI or Tableau.\n- Working knowledge of relational databases such as MySQL or PostgreSQL.\n\nPreferred Skills:\n- Knowledge of Machine Learning fundamentals and Scikit-Learn is a bonus.\n- Experience with Apache Spark or cloud data warehouses is preferred."
+  },
+  {
+    "employer_name": "Stripe",
+    "job_title": "Backend Software Engineer, Payments Infrastructure",
+    "source_name": "Greenhouse Archive",
+    "source_url": "https://boards.greenhouse.io/stripe/jobs/archive-backend-payments",
+    "source_type": "archived_posting",
+    "location": "San Francisco, CA / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-10T11:00:00Z",
+    "fetched_at": "2026-02-10T13:00:00Z",
+    "description_text": "About Stripe: Stripe is a financial infrastructure platform for the internet.\n\nRequirements:\n- 3+ years experience building scalable backend services.\n- Strong proficiency in Python, Go, or Ruby is required.\n- Required: Experience working with PostgreSQL and relational database performance.\n- Experience designing and maintaining public-facing REST APIs.\n- Experience with Docker and microservices architecture is preferred."
+  },
+  {
+    "employer_name": "Meta",
+    "job_title": "Front End Engineer, Web Platforms",
+    "source_name": "Meta Careers Archive",
+    "source_url": "https://www.metacareers.com/jobs/archive-frontend-engineer",
+    "source_type": "archived_posting",
+    "location": "Menlo Park, CA / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-01-20T10:00:00Z",
+    "fetched_at": "2026-01-20T12:00:00Z",
+    "description_text": "About the Role: Meta is looking for Frontend Software Engineers to develop interactive web applications used by billions of people.\n\nMinimum Qualifications:\n- Bachelor's degree in Computer Science or equivalent.\n- 2+ years experience with modern JavaScript, TypeScript, and HTML/CSS.\n- Required: Deep expertise in React and component-driven state architecture.\n- Experience integrating REST APIs and GraphQL endpoints.\n\nPreferred Qualifications:\n- Experience with Next.js and frontend performance optimization.\n- Familiarity with CI/CD and modern web build tooling."
+  }
+]

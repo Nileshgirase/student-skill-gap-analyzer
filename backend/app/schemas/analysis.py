@@ -96,6 +96,9 @@ class AnalysisDetailResponse(BaseModel):
     updated_at: datetime
     student_skills: list[SkillResponseSchema] = []
     job_snapshots: list[JobSnapshotResponse] = []
+    has_cached_snapshots: bool = False
+    cached_snapshot_title: str | None = None
+    cached_snapshot_date: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

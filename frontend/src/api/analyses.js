@@ -25,6 +25,11 @@ export const searchJobs = async (analysisId) => {
   return response.data;
 };
 
+export const useCachedPosting = async (analysisId) => {
+  const response = await api.post(`/analyses/${analysisId}/use-cached-posting`);
+  return response.data;
+};
+
 export const runGapAnalysis = async (analysisId) => {
   const response = await api.post(`/analyses/${analysisId}/run-gap-analysis`);
   return response.data;
