@@ -19,6 +19,11 @@ from app.schemas.job import (
     JobSnapshotResponse,
     JobSearchResponse,
 )
+from app.schemas.gap_analysis import (
+    SkillGapItemSchema,
+    AdditionalSkillSchema,
+    GapAnalysisResponse,
+)
 
 __all__ = [
     "UserRegisterRequest",
@@ -33,4 +38,7 @@ __all__ = [
     "StudentSkillsUpdateRequest",
     "JobSnapshotResponse",
     "JobSearchResponse",
+    "SkillGapItemSchema",
+    "AdditionalSkillSchema",
+    "GapAnalysisResponse",
 ]

@@ -22,7 +22,8 @@ A full-stack, portfolio-level web application designed to help students analyze 
 | **Phase 3** | **Analysis Input & Persistence (Ownership Scoping, Models, Endpoints)** | **Completed** |
 | **Phase 4** | **First Verified Source Connector (Normalized Job Architecture, Greenhouse)** | **Completed** |
 | **Phase 5** | **Multi-Source Connectors (Lever ATS, Deduplication & Freshness Policy)** | **Completed** |
-| Phase 6 | Skill Extraction & Gap Analysis Engine | Pending approval |
+| **Phase 6** | **Skill Extraction & Gap Analysis Engine (Evidence Tracking & Coverage)** | **Completed** |
+| Phase 7 | Personalized Learning Roadmap Generator | Pending approval |
 | Phase 7 | Personalized Learning Roadmap Generator | Pending |
 | Phase 8 | Frontend Web Application (React + Vite + Tailwind CSS) | Pending |
 | Phase 9 | Hardening & Portfolio Documentation | Pending |
@@ -108,7 +109,7 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📡 API Endpoints (Phases 1, 2, 3 & 4)
+## 📡 API Endpoints (Phases 1, 2, 3, 4 & 6)
 
 | Method | Endpoint | Auth Required | Description |
 | :--- | :--- | :---: | :--- |
@@ -123,6 +124,7 @@ uvicorn app.main:app --reload
 | `DELETE` | `/api/analyses/{id}` | **Yes** (Bearer) | Delete owned analysis with cascade deletion of related records |
 | `POST` | `/api/analyses/{id}/student-skills` | **Yes** (Bearer) | Replace or update student skills for an owned analysis |
 | `POST` | `/api/analyses/{id}/search-jobs` | **Yes** (Bearer) | Retrieve verified job postings from permitted ATS sources |
+| `POST` | `/api/analyses/{id}/run-gap-analysis` | **Yes** (Bearer) | Run evidence-backed skill extraction, gap comparison & coverage score |
 
 ---
 

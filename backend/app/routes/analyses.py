@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.analysis import Analysis
 from app.models.student_skill import StudentSkill
+from app.models.required_skill import RequiredSkill
 from app.schemas.analysis import (
     AnalysisCreateRequest,
     AnalysisSummaryResponse,
@@ -13,9 +14,12 @@ from app.schemas.analysis import (
     SkillResponseSchema,
 )
 from app.schemas.job import JobSearchResponse
+from app.schemas.gap_analysis import GapAnalysisResponse
 from app.security.dependencies import get_current_user
 from app.services.skill_normalizer import canonicalize_skill_name
 from app.services.job_search_service import execute_job_search
+from app.services.skill_extractor import extract_skills_from_text
+from app.services.gap_analyzer import compute_skill_gap_analysis
 
 router = APIRouter(prefix="/api/analyses", tags=["Analyses"])
 
@@ -234,3 +238,66 @@ def search_jobs_for_analysis(
         message=message,
         jobs=snapshots,
     )
+
+
+@router.post(
+    "/{analysis_id}/run-gap-analysis",
+    response_model=GapAnalysisResponse,
+    summary="Execute Evidence-Backed Skill Gap Analysis",
+    description=(
+        "Extracts required skills from verified job snapshots, compares them against "
+        "student-reported proficiency, computes coverage metrics, and catalogs gaps."
+    ),
+)
+def run_gap_analysis(
+    analysis_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    analysis = (
+        db.query(Analysis)
+        .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)
+        .first()
+    )
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found.",
+        )
+
+    if not analysis.job_snapshots:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "No verified job postings found for this analysis. "
+                "Please run job search successfully before analyzing skill gaps."
+            ),
+        )
+
+    # Extract skills for any snapshot that doesn't yet have required_skills populated
+    for snapshot in analysis.job_snapshots:
+        if not snapshot.required_skills:
+            extracted_items = extract_skills_from_text(snapshot.description_text)
+            for item in extracted_items:
+                req_skill = RequiredSkill(
+                    job_snapshot_id=snapshot.id,
+                    skill_name=item.skill_name,
+                    canonical_skill=item.canonical_skill,
+                    requirement_type=item.requirement_type,
+                    evidence_text=item.evidence_text,
+                    extraction_method=item.extraction_method,
+                    confidence=item.confidence,
+                )
+                db.add(req_skill)
+
+    db.commit()
+    db.refresh(analysis)
+
+    # Compute skill gap comparisons and coverage metric
+    result = compute_skill_gap_analysis(analysis)
+
+    # Update status to analysis_complete
+    analysis.status = "analysis_complete"
+    db.commit()
+
+    return result
