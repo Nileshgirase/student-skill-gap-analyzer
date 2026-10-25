@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import Base, engine
 import app.models  # Ensures models are registered with Base.metadata
-from app.routes import health, auth, analyses
+from app.routes import health, auth, analyses, roadmaps
 
 
 @asynccontextmanager
@@ -47,6 +47,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(analyses.router)
+app.include_router(roadmaps.router)
 
 
 @app.get(

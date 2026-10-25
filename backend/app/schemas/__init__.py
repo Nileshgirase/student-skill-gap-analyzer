@@ -24,6 +24,11 @@ from app.schemas.gap_analysis import (
     AdditionalSkillSchema,
     GapAnalysisResponse,
 )
+from app.schemas.roadmap import (
+    RoadmapItemResponse,
+    RoadmapUpdateStatusRequest,
+    RoadmapResponse,
+)
 
 __all__ = [
     "UserRegisterRequest",
@@ -41,4 +46,7 @@ __all__ = [
     "SkillGapItemSchema",
     "AdditionalSkillSchema",
     "GapAnalysisResponse",
+    "RoadmapItemResponse",
+    "RoadmapUpdateStatusRequest",
+    "RoadmapResponse",
 ]

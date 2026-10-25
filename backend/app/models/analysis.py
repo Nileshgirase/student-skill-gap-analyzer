@@ -47,6 +47,12 @@ class Analysis(Base):
         cascade="all, delete-orphan",
         order_by="JobSnapshot.id",
     )
+    roadmap_items = relationship(
+        "RoadmapItem",
+        back_populates="analysis",
+        cascade="all, delete-orphan",
+        order_by="RoadmapItem.week_number",
+    )
 
     def __repr__(self) -> str:
         return (

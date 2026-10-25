@@ -23,9 +23,8 @@ A full-stack, portfolio-level web application designed to help students analyze 
 | **Phase 4** | **First Verified Source Connector (Normalized Job Architecture, Greenhouse)** | **Completed** |
 | **Phase 5** | **Multi-Source Connectors (Lever ATS, Deduplication & Freshness Policy)** | **Completed** |
 | **Phase 6** | **Skill Extraction & Gap Analysis Engine (Evidence Tracking & Coverage)** | **Completed** |
-| Phase 7 | Personalized Learning Roadmap Generator | Pending approval |
-| Phase 7 | Personalized Learning Roadmap Generator | Pending |
-| Phase 8 | Frontend Web Application (React + Vite + Tailwind CSS) | Pending |
+| **Phase 7** | **Personalized Learning Roadmap Generator (Free Catalog, Weekly Budget)** | **Completed** |
+| Phase 8 | Frontend Web Application (React + Vite + Tailwind CSS) | Pending approval |
 | Phase 9 | Hardening & Portfolio Documentation | Pending |
 
 ---
@@ -109,7 +108,7 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📡 API Endpoints (Phases 1, 2, 3, 4 & 6)
+## 📡 API Endpoints (Phases 1-7)
 
 | Method | Endpoint | Auth Required | Description |
 | :--- | :--- | :---: | :--- |
@@ -125,6 +124,9 @@ uvicorn app.main:app --reload
 | `POST` | `/api/analyses/{id}/student-skills` | **Yes** (Bearer) | Replace or update student skills for an owned analysis |
 | `POST` | `/api/analyses/{id}/search-jobs` | **Yes** (Bearer) | Retrieve verified job postings from permitted ATS sources |
 | `POST` | `/api/analyses/{id}/run-gap-analysis` | **Yes** (Bearer) | Run evidence-backed skill extraction, gap comparison & coverage score |
+| `GET` | `/api/analyses/{id}/roadmap` | **Yes** (Bearer) | Fetch personalized week-by-week learning roadmap |
+| `POST` | `/api/analyses/{id}/roadmap` | **Yes** (Bearer) | Synthesize roadmap from verified gaps bounded by weekly hours |
+| `PATCH` | `/api/roadmap-items/{id}` | **Yes** (Bearer) | Update task completion status (not_started, in_progress, completed) |
 
 ---
 

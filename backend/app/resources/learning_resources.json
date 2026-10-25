@@ -1,0 +1,223 @@
+{
+  "python": [
+    {
+      "title": "Python Official Tutorial",
+      "url": "https://docs.python.org/3/tutorial/",
+      "provider": "Python Software Foundation",
+      "estimated_hours": 8.0,
+      "learning_goal": "Master core syntax, data structures (lists, dicts, sets), functions, and modules."
+    },
+    {
+      "title": "Python for Everybody Specialization",
+      "url": "https://www.py4e.com/",
+      "provider": "Dr. Charles Severance (Free Open Courseware)",
+      "estimated_hours": 6.0,
+      "learning_goal": "Work with files, web APIs, and practical data processing patterns."
+    }
+  ],
+  "sql": [
+    {
+      "title": "PostgreSQL Tutorial for Beginners",
+      "url": "https://www.postgresqltutorial.com/",
+      "provider": "PostgreSQL Tutorial",
+      "estimated_hours": 6.0,
+      "learning_goal": "Learn SQL queries: SELECT, JOINs, GROUP BY, aggregations, and subqueries."
+    },
+    {
+      "title": "SQLZoo Interactive SQL Practice",
+      "url": "https://sqlzoo.net/",
+      "provider": "SQLZoo",
+      "estimated_hours": 4.0,
+      "learning_goal": "Solve real-world relational database schema queries and complex joins."
+    }
+  ],
+  "postgresql": [
+    {
+      "title": "PostgreSQL Official Documentation",
+      "url": "https://www.postgresql.org/docs/",
+      "provider": "PostgreSQL Global Development Group",
+      "estimated_hours": 6.0,
+      "learning_goal": "Learn indexing, transactions (ACID), schema design, and query optimization."
+    }
+  ],
+  "javascript": [
+    {
+      "title": "MDN Web Docs: JavaScript Basics & Guide",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+      "provider": "Mozilla Developer Network",
+      "estimated_hours": 8.0,
+      "learning_goal": "Master modern ES6+ features, async/await, closures, and DOM manipulation."
+    }
+  ],
+  "typescript": [
+    {
+      "title": "TypeScript Official Handbook",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+      "provider": "Microsoft TypeScript Team",
+      "estimated_hours": 6.0,
+      "learning_goal": "Understand static typing, interfaces, generics, utility types, and TS configuration."
+    }
+  ],
+  "react": [
+    {
+      "title": "React Official Documentation & Interactive Tutorials",
+      "url": "https://react.dev/learn",
+      "provider": "Meta / React Core Team",
+      "estimated_hours": 8.0,
+      "learning_goal": "Learn component architecture, state management with hooks, effects, and modern patterns."
+    }
+  ],
+  "docker": [
+    {
+      "title": "Docker Official Getting Started Guide",
+      "url": "https://docs.docker.com/get-started/",
+      "provider": "Docker Inc.",
+      "estimated_hours": 5.0,
+      "learning_goal": "Containerize applications, author efficient Dockerfiles, and manage multi-container setups with Docker Compose."
+    }
+  ],
+  "kubernetes": [
+    {
+      "title": "Kubernetes Official Interactive Basics",
+      "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/",
+      "provider": "Cloud Native Computing Foundation (CNCF)",
+      "estimated_hours": 6.0,
+      "learning_goal": "Deploy and scale containerized applications using Pods, Deployments, and Services."
+    }
+  ],
+  "aws": [
+    {
+      "title": "AWS Free Digital Training & Cloud Practitioner Path",
+      "url": "https://explore.skillbuilder.aws/",
+      "provider": "Amazon Web Services",
+      "estimated_hours": 8.0,
+      "learning_goal": "Learn core AWS cloud architecture: EC2, S3, IAM, VPC, and serverless Lambda."
+    }
+  ],
+  "gcp": [
+    {
+      "title": "Google Cloud Computing Fundamentals",
+      "url": "https://cloud.google.com/training/free",
+      "provider": "Google Cloud Training",
+      "estimated_hours": 6.0,
+      "learning_goal": "Understand Google Cloud compute engine, Cloud Run, BigQuery, and IAM policies."
+    }
+  ],
+  "git": [
+    {
+      "title": "Pro Git Book (Free Online Edition)",
+      "url": "https://git-scm.com/book/en/v2",
+      "provider": "Scott Chacon & Ben Straub",
+      "estimated_hours": 4.0,
+      "learning_goal": "Master branch workflows, rebasing, merge conflict resolution, and collaborative Git practices."
+    }
+  ],
+  "linux": [
+    {
+      "title": "The Linux Command Line by William Shotts",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "provider": "LinuxCommand.org",
+      "estimated_hours": 5.0,
+      "learning_goal": "Learn shell navigation, permissions, process monitoring, and bash scripting."
+    }
+  ],
+  "power bi": [
+    {
+      "title": "Microsoft Learn: Get Started with Power BI",
+      "url": "https://learn.microsoft.com/en-us/training/paths/create-use-analytics-reports-power-bi/",
+      "provider": "Microsoft Learn",
+      "estimated_hours": 6.0,
+      "learning_goal": "Connect data sources, model data schemas, and build interactive analytical dashboards."
+    }
+  ],
+  "tableau": [
+    {
+      "title": "Tableau Free Training Videos",
+      "url": "https://www.tableau.com/learn/training",
+      "provider": "Salesforce / Tableau",
+      "estimated_hours": 5.0,
+      "learning_goal": "Create data visualisations, calculations, filters, and executive reporting stories."
+    }
+  ],
+  "pandas": [
+    {
+      "title": "Pandas Official User Guide: 10 Minutes to pandas",
+      "url": "https://pandas.pydata.org/docs/user_guide/10min.html",
+      "provider": "Pandas Development Team",
+      "estimated_hours": 5.0,
+      "learning_goal": "Filter, clean, transform, and aggregate structured datasets using DataFrames."
+    }
+  ],
+  "numpy": [
+    {
+      "title": "NumPy: The Absolute Basics for Beginners",
+      "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+      "provider": "NumPy Developers",
+      "estimated_hours": 4.0,
+      "learning_goal": "Perform array slicing, vectorised numerical operations, and linear algebra routines."
+    }
+  ],
+  "machine learning": [
+    {
+      "title": "Google Machine Learning Crash Course",
+      "url": "https://developers.google.com/machine-learning/crash-course",
+      "provider": "Google Developers",
+      "estimated_hours": 8.0,
+      "learning_goal": "Understand supervised learning, loss functions, gradient descent, and model evaluation metrics."
+    }
+  ],
+  "rest api": [
+    {
+      "title": "REST API Tutorial and Best Practices",
+      "url": "https://restfulapi.net/",
+      "provider": "RestfulAPI.net",
+      "estimated_hours": 4.0,
+      "learning_goal": "Design resource-oriented HTTP APIs with proper status codes, idempotency, and CRUD endpoints."
+    }
+  ],
+  "graphql": [
+    {
+      "title": "Introduction to GraphQL",
+      "url": "https://graphql.org/learn/",
+      "provider": "GraphQL Foundation",
+      "estimated_hours": 5.0,
+      "learning_goal": "Write schemas, queries, mutations, resolvers, and avoid over-fetching in API requests."
+    }
+  ],
+  "ci/cd": [
+    {
+      "title": "GitHub Actions Documentation & Quickstart",
+      "url": "https://docs.github.com/en/actions/quickstart",
+      "provider": "GitHub",
+      "estimated_hours": 4.0,
+      "learning_goal": "Automate test suites, builds, and linting with YAML workflows upon pull requests."
+    }
+  ],
+  "ruby": [
+    {
+      "title": "Ruby in Twenty Minutes & Official Guides",
+      "url": "https://www.ruby-lang.org/en/documentation/quickstart/",
+      "provider": "Ruby Community",
+      "estimated_hours": 5.0,
+      "learning_goal": "Learn Ruby syntax, blocks, object-oriented concepts, and gem dependency management."
+    }
+  ],
+  "go": [
+    {
+      "title": "A Tour of Go",
+      "url": "https://go.dev/tour/",
+      "provider": "The Go Authors",
+      "estimated_hours": 6.0,
+      "learning_goal": "Master Go syntax, goroutines, channels, interfaces, and struct methods."
+    }
+  ],
+  "c++": [
+    {
+      "title": "Learn C++ Free Online Tutorials",
+      "url": "https://www.learncpp.com/",
+      "provider": "LearnCpp.com",
+      "estimated_hours": 8.0,
+      "learning_goal": "Understand memory pointers, references, object-oriented design, templates, and RAII."
+    }
+  ]
+}
