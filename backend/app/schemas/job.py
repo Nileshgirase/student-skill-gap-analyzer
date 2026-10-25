@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class JobSnapshotResponse(BaseModel):
@@ -35,3 +35,15 @@ class JobSearchResponse(BaseModel):
     cached_snapshot_title: str | None = None
     cached_snapshot_date: datetime | None = None
     cached_snapshot_employer: str | None = None
+
+
+class UserProvidedJobRequest(BaseModel):
+    """Payload for directly pasting or providing a job description."""
+    description_text: str = Field(
+        ...,
+        min_length=20,
+        max_length=50000,
+        description="Full text or excerpt of the job description from career page or job board",
+    )
+    job_title: str | None = Field(default=None, max_length=200, description="Optional job title")
+    source_url: str | None = Field(default=None, max_length=500, description="Optional URL to job posting")

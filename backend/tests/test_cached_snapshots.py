@@ -146,3 +146,86 @@ def test_api_use_cached_posting_and_run_gap_analysis(client):
     assert roadmap_res.status_code == 201
     roadmap_data = roadmap_res.json()
     assert len(roadmap_data["items"]) >= 1
+
+
+def test_find_cached_snapshots_for_hcltech_and_alias(db_session):
+    """Verifies that HCLTech and aliases like HCL match the archived catalog."""
+    matches1 = find_cached_snapshots(
+        company_name="HCLTech",
+        target_role="Software Engineer",
+        db=db_session,
+    )
+    assert len(matches1) >= 1
+    assert matches1[0]["employer_name"] == "HCLTech"
+    assert "Java" in matches1[0]["description_text"]
+
+    matches2 = find_cached_snapshots(
+        company_name="HCL",
+        target_role="Software Engineer",
+        db=db_session,
+    )
+    assert len(matches2) >= 1
+    assert matches2[0]["employer_name"] == "HCLTech"
+
+
+def test_api_paste_job_description_flow(client):
+    """Verifies that a student can directly paste a job description for any company."""
+    # 1. Register student
+    reg = client.post(
+        "/api/auth/register",
+        json={"name": "HCL Student", "email": "hcl.student@university.edu", "password": "SecurePassword123!"},
+    )
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    # 2. Create analysis for HCLTech Java Developer
+    create_res = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "HCLTech",
+            "target_role": "Java Developer",
+            "weekly_hours": 12,
+            "student_skills": [
+                {"name": "Java", "proficiency": "intermediate"},
+                {"name": "Git", "proficiency": "beginner"},
+            ],
+        },
+    )
+    assert create_res.status_code == 201
+    analysis_id = create_res.json()["id"]
+
+    # 3. Paste job description directly
+    paste_res = client.post(
+        f"/api/analyses/{analysis_id}/paste-job-description",
+        headers=headers,
+        json={
+            "description_text": (
+                "HCLTech is seeking an experienced Java Developer. "
+                "Required: Strong proficiency in Java, Spring Boot, and REST API development. "
+                "Required: Hands-on experience with PostgreSQL and SQL database queries. "
+                "Experience with Docker and AWS is a plus."
+            ),
+            "job_title": "Java Developer",
+            "source_url": "https://www.hcltech.com/careers/java-dev",
+        },
+    )
+    assert paste_res.status_code == 200
+    paste_data = paste_res.json()
+    assert paste_data["status"] == "verified_jobs_found"
+    assert len(paste_data["jobs"]) == 1
+    assert paste_data["jobs"][0]["source_type"] == "user_provided_posting"
+
+    # 4. Run gap analysis on the pasted posting
+    gap_res = client.post(f"/api/analyses/{analysis_id}/run-gap-analysis", headers=headers)
+    assert gap_res.status_code == 200
+    gap_data = gap_res.json()
+
+    # Java should be covered (intermediate), Spring Boot & PostgreSQL missing (required)
+    assert gap_data["coverage_percentage"] is not None
+    assert any(g["canonical_skill"] == "java" and g["status"] == "self_reported_covered" for g in gap_data["skill_gaps"])
+    assert any(g["canonical_skill"] == "spring boot" and g["status"] == "missing" for g in gap_data["skill_gaps"])
+
+    # 5. Generate roadmap
+    roadmap_res = client.post(f"/api/analyses/{analysis_id}/roadmap", headers=headers)
+    assert roadmap_res.status_code == 201
+    assert len(roadmap_res.json()["items"]) >= 1

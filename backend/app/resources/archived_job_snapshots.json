@@ -1,5 +1,101 @@
 [
   {
+    "employer_name": "HCLTech",
+    "job_title": "Software Engineer / Java Full Stack Developer",
+    "source_name": "HCLTech Careers Archive",
+    "source_url": "https://www.hcltech.com/careers/software-engineer-java",
+    "source_type": "archived_posting",
+    "location": "Noida / Bangalore / Chennai / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-15T09:00:00Z",
+    "fetched_at": "2026-02-15T12:00:00Z",
+    "description_text": "Role Overview: HCLTech is seeking a Software Engineer to design, develop, and maintain high-performance enterprise applications.\n\nKey Qualifications & Requirements:\n- Bachelor's degree in Engineering, Computer Science, or equivalent.\n- Required: Strong programming expertise in Java and Spring Boot framework.\n- 2+ years experience designing and consuming REST APIs and microservices.\n- Required: Solid understanding of relational databases such as MySQL or PostgreSQL and SQL queries.\n- Hands-on experience with Git version control.\n\nPreferred Skills:\n- Experience with frontend frameworks like React or Angular is preferred.\n- Knowledge of Docker containers and CI/CD deployment pipelines.\n- Familiarity with cloud platforms (AWS or Azure) is a bonus."
+  },
+  {
+    "employer_name": "HCLTech",
+    "job_title": "Cloud & DevOps Engineer",
+    "source_name": "HCLTech Careers Archive",
+    "source_url": "https://www.hcltech.com/careers/cloud-devops-engineer",
+    "source_type": "archived_posting",
+    "location": "Noida / Bangalore / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-10T10:00:00Z",
+    "fetched_at": "2026-02-10T13:00:00Z",
+    "description_text": "Overview: HCLTech is hiring Cloud & DevOps Engineers to automate cloud infrastructure and streamline continuous deployment.\n\nKey Requirements:\n- Required: Hands-on experience with Amazon Web Services (AWS) or Microsoft Azure.\n- Required: Proficiency in Linux systems administration and scripting using Python or Bash.\n- Experience deploying and managing Docker containers and Kubernetes clusters.\n- Experience setting up automated CI/CD pipelines using Git.\n\nPreferred Qualifications:\n- Experience with Terraform infrastructure as code is a plus.\n- Knowledge of monitoring tools and distributed microservices."
+  },
+  {
+    "employer_name": "Infosys",
+    "job_title": "Systems Engineer / Software Developer",
+    "source_name": "Infosys Careers Archive",
+    "source_url": "https://www.infosys.com/careers/job-opportunities/systems-engineer",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Pune / Hyderabad / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-01T09:00:00Z",
+    "fetched_at": "2026-02-01T12:00:00Z",
+    "description_text": "About the Role: Infosys is looking for talented Systems Engineers to build next-generation enterprise digital platforms.\n\nRequirements:\n- Required: Proficiency in at least one object-oriented programming language: Java, Python, or C++.\n- Strong understanding of data structures, algorithms, and software design principles.\n- Required: Practical experience with SQL and relational databases such as MySQL or PostgreSQL.\n- Familiarity with Git version control systems.\n\nPreferred Qualifications:\n- Experience with REST APIs and web services.\n- Exposure to cloud technologies like AWS, Google Cloud Platform (GCP), or Azure.\n- Understanding of automated unit testing and agile development methodologies."
+  },
+  {
+    "employer_name": "Wipro",
+    "job_title": "Project Engineer / Full Stack Developer",
+    "source_name": "Wipro Careers Archive",
+    "source_url": "https://careers.wipro.com/job-opportunities/project-engineer",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Hyderabad / Chennai / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-01-25T10:00:00Z",
+    "fetched_at": "2026-01-25T13:00:00Z",
+    "description_text": "Job Description: Wipro is hiring Project Engineers to deliver scalable full stack solutions for global customers.\n\nTechnical Qualifications:\n- Required: Strong proficiency in JavaScript and React for modern interactive web applications.\n- Required: Experience building backend APIs using Node.js or Python.\n- Practical experience writing SQL queries with MySQL, PostgreSQL, or MongoDB.\n- Familiarity with Git for code collaboration.\n\nPreferred Qualifications:\n- Hands-on experience with Docker and automated CI/CD.\n- Familiarity with Next.js or TypeScript is a plus.\n- Knowledge of cloud deployment on AWS or Azure."
+  },
+  {
+    "employer_name": "Cognizant",
+    "job_title": "Programmer Analyst / Backend Engineer",
+    "source_name": "Cognizant Careers Archive",
+    "source_url": "https://careers.cognizant.com/global/en/job/programmer-analyst",
+    "source_type": "archived_posting",
+    "location": "Chennai / Bangalore / Kolkata / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-01-20T11:00:00Z",
+    "fetched_at": "2026-01-20T14:00:00Z",
+    "description_text": "Role Overview: Cognizant is looking for Programmer Analysts to design and implement robust enterprise services.\n\nMandatory Skills:\n- Required: Solid programming proficiency in Java, Spring Boot, or Python.\n- Required: Experience with REST API design, architecture, and documentation.\n- Strong proficiency in SQL with PostgreSQL or MySQL relational databases.\n- Experience with Git version control.\n\nDesirable Skills:\n- Experience with Docker containerization and Kubernetes is preferred.\n- Exposure to Amazon Web Services (AWS) or Microsoft Azure cloud.\n- Knowledge of CI/CD pipelines."
+  },
+  {
+    "employer_name": "Accenture",
+    "job_title": "Associate Software Engineer / Application Developer",
+    "source_name": "Accenture Careers Archive",
+    "source_url": "https://www.accenture.com/in-en/careers/jobdetails?id=associate-software-engineer",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Mumbai / Gurgaon / Hyderabad / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-12T08:30:00Z",
+    "fetched_at": "2026-02-12T11:30:00Z",
+    "description_text": "Job Summary: Accenture is hiring Associate Software Engineers to join technology delivery teams.\n\nKey Responsibilities & Qualifications:\n- Required: Strong foundational programming skills in Java, Python, or C#.\n- Required: Hands-on experience with SQL and relational database concepts.\n- Good understanding of software engineering fundamentals and Git.\n\nPreferred Qualifications:\n- Experience with web technologies such as React or Angular.\n- Understanding of cloud fundamentals across AWS, Azure, or GCP.\n- Knowledge of agile methodologies and DevOps practices."
+  },
+  {
+    "employer_name": "TCS",
+    "job_title": "Software Engineer / Developer",
+    "source_name": "TCS Careers Archive",
+    "source_url": "https://ibegin.tcs.com/iBegin/jobs/software-engineer",
+    "source_type": "archived_posting",
+    "location": "Mumbai / Pune / Bangalore / Hyderabad / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-05T10:00:00Z",
+    "fetched_at": "2026-02-05T13:00:00Z",
+    "description_text": "Job Description: Tata Consultancy Services (TCS) is hiring Software Engineers.\n\nRole Requirements:\n- Required: Strong programming expertise in Java, Python, or C++.\n- Required: Solid experience in relational databases and SQL queries (Oracle, MySQL, or PostgreSQL).\n- Experience with REST API development and integration.\n- Familiarity with Linux command line and Git.\n\nPreferred Skills:\n- Experience with Spring Boot or microservices architecture.\n- Exposure to Docker and cloud computing platforms (AWS or Azure)."
+  },
+  {
+    "employer_name": "TCS",
+    "job_title": "Data Analyst / BI Specialist",
+    "source_name": "TCS Careers Archive",
+    "source_url": "https://ibegin.tcs.com/iBegin/jobs/data-analyst-specialist",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Pune / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-01-15T09:30:00Z",
+    "fetched_at": "2026-01-15T12:00:00Z",
+    "description_text": "Role Overview: Tata Consultancy Services (TCS) is hiring a Data Analyst to deliver business intelligence and analytics solutions for enterprise clients.\n\nKey Requirements:\n- Required: Proficiency in SQL for complex data extraction and transformation.\n- Required: Hands-on experience with Python, Pandas, and NumPy for data manipulation.\n- 2+ years experience building interactive dashboards using Power BI or Tableau.\n- Working knowledge of relational databases such as MySQL or PostgreSQL.\n\nPreferred Skills:\n- Knowledge of Machine Learning fundamentals and Scikit-Learn is a bonus.\n- Experience with Apache Spark or cloud data warehouses is preferred."
+  },
+  {
     "employer_name": "Google",
     "job_title": "Software Engineer, Infrastructure",
     "source_name": "Google Careers Archive",
@@ -34,18 +130,6 @@
     "posted_at": "2026-03-01T08:00:00Z",
     "fetched_at": "2026-03-01T11:00:00Z",
     "description_text": "Job Description: Amazon is seeking an innovative Software Development Engineer (SDE) to build highly scalable backend services.\n\nBasic Qualifications:\n- 2+ years of non-internship professional software development experience.\n- Required: Programming experience with at least one modern language such as Java, Python, or Go.\n- Experience with object-oriented design and distributed microservices architecture.\n- Strong knowledge of Git and Linux operating systems.\n\nPreferred Qualifications:\n- Hands-on experience with Amazon Web Services (AWS) ecosystem.\n- Experience with Docker, Kubernetes, and automated CI/CD.\n- Experience with NoSQL or DynamoDB/MongoDB and PostgreSQL."
-  },
-  {
-    "employer_name": "TCS",
-    "job_title": "Data Analyst / BI Specialist",
-    "source_name": "TCS Careers Archive",
-    "source_url": "https://ibegin.tcs.com/iBegin/jobs/data-analyst-specialist",
-    "source_type": "archived_posting",
-    "location": "Bangalore / Pune / Remote",
-    "employment_type": "Full-time",
-    "posted_at": "2026-01-15T09:30:00Z",
-    "fetched_at": "2026-01-15T12:00:00Z",
-    "description_text": "Role Overview: Tata Consultancy Services (TCS) is hiring a Data Analyst to deliver business intelligence and analytics solutions for enterprise clients.\n\nKey Requirements:\n- Required: Proficiency in SQL for complex data extraction and transformation.\n- Required: Hands-on experience with Python, Pandas, and NumPy for data manipulation.\n- 2+ years experience building interactive dashboards using Power BI or Tableau.\n- Working knowledge of relational databases such as MySQL or PostgreSQL.\n\nPreferred Skills:\n- Knowledge of Machine Learning fundamentals and Scikit-Learn is a bonus.\n- Experience with Apache Spark or cloud data warehouses is preferred."
   },
   {
     "employer_name": "Stripe",

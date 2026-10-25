@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createAnalysis, searchJobs } from '../api/analyses';
-import { Building2, Briefcase, Clock, Plus, Trash2, ArrowRight, AlertCircle, Info, Sparkles } from 'lucide-react';
+import { createAnalysis, searchJobs, pasteJobDescription } from '../api/analyses';
+import { Building2, Briefcase, Clock, Plus, Trash2, ArrowRight, AlertCircle, Info, Sparkles, FileText } from 'lucide-react';
 
 const NewAnalysis = () => {
   const [companyName, setCompanyName] = useState('');
@@ -13,6 +13,9 @@ const NewAnalysis = () => {
   ]);
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillProficiency, setNewSkillProficiency] = useState('beginner');
+  const [jobDescription, setJobDescription] = useState('');
+  const [jobSourceUrl, setJobSourceUrl] = useState('');
+  const [showPasteOption, setShowPasteOption] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [progressStep, setProgressStep] = useState('');
@@ -66,8 +69,17 @@ const NewAnalysis = () => {
         student_skills: skills,
       });
 
-      setProgressStep(`Searching live ATS sources (Greenhouse & Lever) for verified ${companyName.trim()} postings...`);
-      await searchJobs(created.id);
+      if (jobDescription.trim().length >= 20) {
+        setProgressStep(`Extracting evidence-backed requirements from provided ${companyName.trim()} description...`);
+        await pasteJobDescription(created.id, {
+          description_text: jobDescription.trim(),
+          source_url: jobSourceUrl.trim() || undefined,
+          job_title: targetRole.trim(),
+        });
+      } else {
+        setProgressStep(`Searching live ATS sources (Greenhouse & Lever) for verified ${companyName.trim()} postings...`);
+        await searchJobs(created.id);
+      }
 
       navigate(`/analyses/${created.id}`);
     } catch (err) {
@@ -146,6 +158,49 @@ const NewAnalysis = () => {
               <Info className="w-3.5 h-3.5" />
               No fixed dropdowns. Roles are matched against live job titles using explainable relevance rules.
             </p>
+          </div>
+
+          {/* Optional Direct Job Description Paste */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <button
+              type="button"
+              onClick={() => setShowPasteOption(!showPasteOption)}
+              className="w-full flex items-center justify-between text-left text-xs font-bold text-blue-700 hover:text-blue-900 transition"
+            >
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span>Have the job description from {companyName.trim() || 'the employer'}? (Optional: Paste it here)</span>
+              </div>
+              <span className="text-slate-400 font-normal">{showPasteOption ? '▲ Hide' : '▼ Show'}</span>
+            </button>
+
+            {showPasteOption && (
+              <div className="mt-3 space-y-3 pt-3 border-t border-slate-200/60">
+                <p className="text-[11px] text-slate-500">
+                  Recommended for companies that don't host public feeds on Greenhouse or Lever (e.g. HCLTech, TCS, Infosys, Wipro, Accenture). Paste the description directly from their career page or LinkedIn.
+                </p>
+                <div>
+                  <textarea
+                    rows={4}
+                    disabled={submitting}
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    placeholder="Paste job description or qualification requirements here..."
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    disabled={submitting}
+                    value={jobSourceUrl}
+                    onChange={(e) => setJobSourceUrl(e.target.value)}
+                    placeholder="Optional posting link (e.g. https://www.hcltech.com/careers/...)"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Weekly Hours Study Budget */}

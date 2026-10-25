@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getAnalysis, runGapAnalysis, searchJobs, useCachedPosting } from '../api/analyses';
-import { Building2, Briefcase, RefreshCw, MapPin, ExternalLink, Calendar, AlertTriangle, ArrowRight, BookOpen, Layers, Clock, History } from 'lucide-react';
+import { getAnalysis, runGapAnalysis, searchJobs, useCachedPosting, pasteJobDescription } from '../api/analyses';
+import { Building2, Briefcase, RefreshCw, MapPin, ExternalLink, Calendar, AlertTriangle, ArrowRight, BookOpen, Layers, Clock, History, FileText, Sparkles, UploadCloud } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import JobSourceCard from '../components/JobSourceCard';
@@ -15,6 +15,9 @@ const AnalysisResult = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState('');
   const [error, setError] = useState('');
+  const [pastedText, setPastedText] = useState('');
+  const [pastedUrl, setPastedUrl] = useState('');
+  const [showPasteForm, setShowPasteForm] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -50,6 +53,27 @@ const AnalysisResult = () => {
       await loadData();
     } catch (err) {
       alert(err.response?.data?.detail || 'Failed to refresh job postings.');
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  const handlePasteSubmit = async (e) => {
+    e.preventDefault();
+    if (!pastedText.trim() || pastedText.trim().length < 20) {
+      alert('Please enter at least 20 characters of the job description.');
+      return;
+    }
+    setActionLoading('Extracting requirements from pasted job description...');
+    try {
+      await pasteJobDescription(analysisId, {
+        description_text: pastedText.trim(),
+        source_url: pastedUrl.trim() || undefined,
+        job_title: analysis.target_role,
+      });
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to analyze pasted job description.');
     } finally {
       setActionLoading('');
     }
@@ -185,6 +209,94 @@ const AnalysisResult = () => {
               </div>
             </div>
           )}
+
+          {/* Option 2: Paste Job Description directly */}
+          <div className="mt-6 border-t border-slate-200 pt-6 text-left">
+            {!showPasteForm ? (
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Have the job description from {analysis.company_name}'s website, LinkedIn, or Naukri?
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Paste the text directly. We will extract the exact evidence-backed technical stack and build your roadmap.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPasteForm(true)}
+                  className="inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition shrink-0"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Paste Description</span>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handlePasteSubmit} className="bg-slate-50 border border-blue-200 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Paste Job Description for {analysis.company_name} ({analysis.target_role})
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasteForm(false)}
+                    className="text-xs font-medium text-slate-400 hover:text-slate-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div>
+                  <textarea
+                    required
+                    rows={6}
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                    placeholder="Paste the full job description or qualification requirements here (e.g. from HCLTech careers, LinkedIn, Naukri)..."
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Minimum 20 characters. The engine will extract skills with sentence-level quotes.
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    type="url"
+                    value={pastedUrl}
+                    onChange={(e) => setPastedUrl(e.target.value)}
+                    placeholder="Optional job posting URL (e.g. https://www.hcltech.com/careers/...)"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasteForm(false)}
+                    className="text-xs font-semibold px-3 py-2 text-slate-600 hover:text-slate-800 rounded-xl transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!!actionLoading}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-200 transition disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{actionLoading ? 'Analyzing...' : 'Extract Requirements & Build Roadmap'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button

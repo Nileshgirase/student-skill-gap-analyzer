@@ -13,7 +13,7 @@ from app.schemas.analysis import (
     StudentSkillsUpdateRequest,
     SkillResponseSchema,
 )
-from app.schemas.job import JobSearchResponse
+from app.schemas.job import JobSearchResponse, UserProvidedJobRequest
 from app.schemas.gap_analysis import GapAnalysisResponse
 from app.security.dependencies import get_current_user
 from app.services.skill_normalizer import canonicalize_skill_name
@@ -21,6 +21,7 @@ from app.services.job_search_service import (
     execute_job_search,
     find_cached_snapshots,
     apply_cached_snapshot_to_analysis,
+    create_user_provided_snapshot,
 )
 from app.services.skill_extractor import extract_skills_from_text
 from app.services.gap_analyzer import compute_skill_gap_analysis
@@ -324,6 +325,50 @@ def use_cached_posting(
         target_role=analysis.target_role,
         message=f"Attached last known verified posting: '{snapshots[0].job_title}' ({snapshots[0].source_name}).",
         jobs=snapshots,
+        has_cached_snapshots=False,
+    )
+
+
+@router.post(
+    "/{analysis_id}/paste-job-description",
+    response_model=JobSearchResponse,
+    summary="Provide Job Description Directly",
+    description=(
+        "Attaches a job description provided directly by the student (e.g. copied from a company's "
+        "career page, LinkedIn, or job board) for companies without public ATS feeds."
+    ),
+)
+def paste_job_description(
+    analysis_id: int,
+    payload: UserProvidedJobRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    analysis = (
+        db.query(Analysis)
+        .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)
+        .first()
+    )
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found.",
+        )
+
+    snapshot = create_user_provided_snapshot(
+        analysis=analysis,
+        db=db,
+        description_text=payload.description_text,
+        job_title=payload.job_title,
+        source_url=payload.source_url,
+    )
+
+    return JobSearchResponse(
+        status="verified_jobs_found",
+        company=analysis.company_name,
+        target_role=analysis.target_role,
+        message=f"Attached student-provided job description for '{snapshot.job_title}'.",
+        jobs=[snapshot],
         has_cached_snapshots=False,
     )
 

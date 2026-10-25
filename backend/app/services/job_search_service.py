@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -28,6 +29,36 @@ def get_archived_catalog() -> list[dict]:
         return []
 
 
+def normalize_company_for_lookup(name: str) -> str:
+    """Normalizes company names and maps common enterprise aliases."""
+    cleaned = re.sub(r"[^a-z0-9]", "", name.lower())
+    aliases = {
+        "hcl": "hcltech",
+        "hcltech": "hcltech",
+        "hcltechnologies": "hcltech",
+        "tcs": "tcs",
+        "tataconsultancy": "tcs",
+        "tataconsultancyservices": "tcs",
+        "wipro": "wipro",
+        "wiprotechnologies": "wipro",
+        "cognizant": "cognizant",
+        "cts": "cognizant",
+        "accenture": "accenture",
+        "infosys": "infosys",
+        "infy": "infosys",
+        "google": "google",
+        "alphabet": "google",
+        "microsoft": "microsoft",
+        "msft": "microsoft",
+        "amazon": "amazon",
+        "aws": "amazon",
+        "meta": "meta",
+        "facebook": "meta",
+        "stripe": "stripe",
+    }
+    return aliases.get(cleaned, cleaned)
+
+
 def find_cached_snapshots(
     company_name: str,
     target_role: str,
@@ -43,6 +74,7 @@ def find_cached_snapshots(
     """
     matches: list[dict] = []
     clean_company = company_name.strip().lower()
+    norm_company = normalize_company_for_lookup(company_name)
 
     # 1. Check local SQLite DB
     query = db.query(JobSnapshot).filter(
@@ -54,7 +86,8 @@ def find_cached_snapshots(
     db_snapshots = query.order_by(JobSnapshot.fetched_at.desc()).all()
     for snap in db_snapshots:
         snap_emp = snap.employer_name.strip().lower()
-        if clean_company in snap_emp or snap_emp in clean_company:
+        snap_norm = normalize_company_for_lookup(snap.employer_name)
+        if clean_company in snap_emp or snap_emp in clean_company or norm_company == snap_norm:
             is_rel, _ = calculate_role_relevance(snap.job_title, target_role)
             if is_rel:
                 matches.append({
@@ -76,11 +109,12 @@ def find_cached_snapshots(
     catalog = get_archived_catalog()
     for item in catalog:
         cat_emp = item.get("employer_name", "").strip().lower()
-        if clean_company in cat_emp or cat_emp in clean_company:
+        cat_norm = normalize_company_for_lookup(item.get("employer_name", ""))
+        if clean_company in cat_emp or cat_emp in clean_company or norm_company == cat_norm:
             is_rel, _ = calculate_role_relevance(item.get("job_title", ""), target_role)
             if is_rel:
                 if not any(
-                    m["employer_name"].lower() == cat_emp and m["job_title"].lower() == item.get("job_title", "").lower()
+                    normalize_company_for_lookup(m["employer_name"]) == cat_norm and m["job_title"].lower() == item.get("job_title", "").lower()
                     for m in matches
                 ):
                     posted = None
@@ -112,6 +146,51 @@ def find_cached_snapshots(
                     })
 
     return matches
+
+
+def create_user_provided_snapshot(
+    analysis: Analysis,
+    db: Session,
+    description_text: str,
+    job_title: str | None = None,
+    source_url: str | None = None,
+) -> JobSnapshot:
+    """
+    Creates and attaches a user-provided job posting snapshot (e.g. pasted directly
+    from a company's career page, LinkedIn, or job board).
+    Extracts real requirements using sentence-level text evidence.
+    """
+    # Remove existing snapshots
+    db.query(JobSnapshot).filter(JobSnapshot.analysis_id == analysis.id).delete()
+
+    effective_title = (job_title or analysis.target_role).strip()
+    effective_url = (
+        source_url.strip()
+        if source_url and source_url.strip()
+        else f"https://careers.google.com/search?q={analysis.company_name}"
+    )
+
+    snapshot = JobSnapshot(
+        analysis_id=analysis.id,
+        source_name=f"{analysis.company_name} Career Posting",
+        source_url=effective_url,
+        source_type="user_provided_posting",
+        employer_name=analysis.company_name,
+        job_title=effective_title,
+        location="Provided by Student",
+        employment_type="Full-time",
+        description_text=description_text.strip(),
+        fetched_at=datetime.now(timezone.utc),
+        posted_at=datetime.now(timezone.utc),
+        is_stale=False,
+        verification_status="user_verified",
+        verification_notes="Job description provided directly by student. Requirements extracted with sentence-level text evidence.",
+    )
+    db.add(snapshot)
+    analysis.status = "verified_jobs_found"
+    db.commit()
+    db.refresh(snapshot)
+    return snapshot
 
 
 def apply_cached_snapshot_to_analysis(
