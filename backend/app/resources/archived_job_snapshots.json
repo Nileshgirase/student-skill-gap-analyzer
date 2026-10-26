@@ -154,5 +154,65 @@
     "posted_at": "2026-01-20T10:00:00Z",
     "fetched_at": "2026-01-20T12:00:00Z",
     "description_text": "About the Role: Meta is looking for Frontend Software Engineers to develop interactive web applications used by billions of people.\n\nMinimum Qualifications:\n- Bachelor's degree in Computer Science or equivalent.\n- 2+ years experience with modern JavaScript, TypeScript, and HTML/CSS.\n- Required: Deep expertise in React and component-driven state architecture.\n- Experience integrating REST APIs and GraphQL endpoints.\n\nPreferred Qualifications:\n- Experience with Next.js and frontend performance optimization.\n- Familiarity with CI/CD and modern web build tooling."
+  },
+  {
+    "employer_name": "Deloitte",
+    "job_title": "Technology Analyst / Business Analyst",
+    "source_name": "Deloitte Careers Archive",
+    "source_url": "https://jobs.deloitte.com/job/technology-analyst-business-intelligence",
+    "source_type": "archived_posting",
+    "location": "New York / Hyderabad / Bangalore / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-18T09:00:00Z",
+    "fetched_at": "2026-02-18T12:00:00Z",
+    "description_text": "Overview: Deloitte is seeking a Technology Analyst to join our Consulting Practice to deliver business analytics and intelligence solutions.\n\nKey Qualifications:\n- Required: Advanced proficiency in SQL for data extraction, joining tables, and complex queries.\n- Required: Practical experience in Python using Pandas for data manipulation and quantitative analysis.\n- Required: Hands-on experience developing interactive management dashboards using Power BI or Tableau.\n- Required: Advanced analytical problem solving and data modeling in Excel.\n- Good understanding of relational databases and Git version control.\n\nPreferred Qualifications:\n- Exposure to cloud analytics platforms (AWS or Azure).\n- Familiarity with business process modeling and agile delivery."
+  },
+  {
+    "employer_name": "Deloitte",
+    "job_title": "Software Engineer / Technology Consultant",
+    "source_name": "Deloitte Careers Archive",
+    "source_url": "https://jobs.deloitte.com/job/software-engineer-consultant",
+    "source_type": "archived_posting",
+    "location": "Chicago / Bangalore / Hyderabad / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-10T10:00:00Z",
+    "fetched_at": "2026-02-10T13:00:00Z",
+    "description_text": "Overview: Deloitte is hiring Software Engineers to develop enterprise application architectures.\n\nCore Requirements:\n- Required: Strong programming proficiency in modern languages (Python or Java).\n- Required: Practical experience building and consuming REST APIs and web services.\n- Required: Solid foundation in relational databases and SQL query development (PostgreSQL or MySQL).\n- Required: Version control proficiency with Git.\n\nPreferred Qualifications:\n- Experience with Docker containerization and CI/CD deployment pipelines.\n- Exposure to cloud technologies on AWS, Azure, or GCP.\n- Understanding of microservices and system design."
+  },
+  {
+    "employer_name": "Mastercard",
+    "job_title": "Software Engineer / Backend Developer",
+    "source_name": "Mastercard Careers Archive",
+    "source_url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers/job/software-engineer",
+    "source_type": "archived_posting",
+    "location": "St. Louis, MO / Pune / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-22T08:30:00Z",
+    "fetched_at": "2026-02-22T11:30:00Z",
+    "description_text": "About the Role: Mastercard is seeking a Software Engineer to develop secure payment processing solutions and distributed backend systems.\n\nKey Requirements:\n- Required: Strong programming foundation in modern object-oriented languages (Java or Python).\n- Required: Hands-on experience designing and implementing secure REST APIs and microservices.\n- Required: Solid understanding of SQL and relational database systems (PostgreSQL, Oracle, or MySQL).\n- Required: Experience with Git version control systems and Linux environments.\n\nPreferred Qualifications:\n- Experience with Spring Boot or FastAPI frameworks.\n- Experience with Docker containers and Kubernetes.\n- Familiarity with payment card security standards and distributed messaging."
+  },
+  {
+    "employer_name": "Mastercard",
+    "job_title": "Data Analyst / Operations Analyst",
+    "source_name": "Mastercard Careers Archive",
+    "source_url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers/job/data-analyst",
+    "source_type": "archived_posting",
+    "location": "Purchase, NY / Pune / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-14T09:00:00Z",
+    "fetched_at": "2026-02-14T12:00:00Z",
+    "description_text": "Role Overview: Mastercard is hiring a Data Analyst to extract business insights from payment network transactions.\n\nQualifications:\n- Required: Advanced proficiency in SQL for querying large relational datasets and performance tuning.\n- Required: Practical experience in Python with Pandas for data transformation and statistical analysis.\n- Required: Hands-on experience building visual reports and executive dashboards in Tableau or Power BI.\n- Required: Advanced spreadsheet analysis with Excel.\n\nPreferred Qualifications:\n- Familiarity with big data technologies like Apache Spark.\n- Basic understanding of Machine Learning concepts."
+  },
+  {
+    "employer_name": "Accenture",
+    "job_title": "Data Analyst / Technology Delivery Analyst",
+    "source_name": "Accenture Careers Archive",
+    "source_url": "https://www.accenture.com/in-en/careers/jobdetails?id=data-analyst-delivery",
+    "source_type": "archived_posting",
+    "location": "Bangalore / Mumbai / Gurgaon / Hyderabad / Remote",
+    "employment_type": "Full-time",
+    "posted_at": "2026-02-16T10:00:00Z",
+    "fetched_at": "2026-02-16T13:00:00Z",
+    "description_text": "Job Summary: Accenture is seeking a Data Analyst to join our Data & Analytics practice.\n\nKey Requirements:\n- Required: Advanced SQL querying skills across relational databases (MySQL, PostgreSQL, or SQL Server).\n- Required: Practical programming experience in Python for data cleaning, Pandas, and analysis.\n- Required: Hands-on experience developing business intelligence dashboards using Power BI or Tableau.\n- Required: Strong analytical modeling skills with Excel.\n- Good understanding of version control with Git.\n\nPreferred Qualifications:\n- Exposure to cloud data warehouses (Snowflake, AWS, or Azure).\n- Familiarity with predictive modeling and statistics."
   }
 ]

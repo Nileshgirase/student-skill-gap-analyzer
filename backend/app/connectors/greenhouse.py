@@ -1,3 +1,4 @@
+import difflib
 import hashlib
 import html
 import logging
@@ -57,7 +58,13 @@ def calculate_role_relevance(job_title: str, target_role: str) -> tuple[bool, st
     if not role_tokens:
         return False, "Target role does not contain valid keywords."
 
-    matched_tokens = [w for w in role_tokens if w in title_tokens]
+    matched_tokens = []
+    for w in role_tokens:
+        if w in title_tokens:
+            matched_tokens.append(w)
+        elif any(difflib.SequenceMatcher(None, w, t).ratio() >= 0.8 for t in title_tokens):
+            matched_tokens.append(w)
+
     match_ratio = len(matched_tokens) / len(role_tokens)
 
     # Require at least 70% of role tokens to appear in the title

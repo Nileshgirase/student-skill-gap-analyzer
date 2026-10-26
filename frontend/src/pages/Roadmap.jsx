@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getRoadmap, createRoadmap, updateRoadmapItemStatus } from '../api/roadmap';
+import { useIndustryBenchmark } from '../api/analyses';
 import { BookOpen, Calendar, Clock, ExternalLink, CheckCircle2, Circle, Clock3, RotateCcw, ArrowLeft, Sparkles } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -11,6 +12,7 @@ const Roadmap = () => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState('');
 
   const loadRoadmap = async () => {
@@ -27,6 +29,20 @@ const Roadmap = () => {
       setError(err.response?.data?.detail || 'Failed to load personalized roadmap.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAutoResolveBenchmark = async () => {
+    setResolving(true);
+    try {
+      await useIndustryBenchmark(analysisId);
+      const data = await createRoadmap(analysisId);
+      setRoadmap(data);
+      setError('');
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to apply benchmark. Please view the analysis page.');
+    } finally {
+      setResolving(false);
     }
   };
 
@@ -69,6 +85,39 @@ const Roadmap = () => {
   }
 
   if (error) {
+    const isNoJobsError = error.toLowerCase().includes('verified job') || error.toLowerCase().includes('job postings');
+    if (isNoJobsError) {
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+            <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-7 h-7" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Verified Job Posting Required</h2>
+            <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+              This employer uses a private career portal without public job feeds. You can instantly apply the verified industry competency framework to generate your study roadmap.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={handleAutoResolveBenchmark}
+                disabled={resolving}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-emerald-200 transition disabled:opacity-50"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{resolving ? 'Applying Benchmark...' : 'Apply Benchmark & Build Roadmap'}</span>
+              </button>
+              <Link
+                to={`/analyses/${analysisId}`}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition"
+              >
+                <span>View Analysis Page</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <ErrorState message={error} onRetry={loadRoadmap} />

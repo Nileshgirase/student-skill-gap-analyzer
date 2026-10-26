@@ -86,7 +86,7 @@ flowchart TD
 | **Password Security** | **Argon2id** (`pwdlib`) | `^0.2.0` | Modern, GPU-resistant memory-hard password hashing |
 | **Authentication** | **PyJWT** | `^2.10.0` | Stateless HMAC-SHA256 bearer tokens with 30m expiry |
 | **Web Scraping / Sanitization** | **BeautifulSoup4** | `^4.12.0` | Strips tags, scripts, and normalizes block-level whitespace |
-| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 58 isolated in-memory automated unit and e2e integration tests |
+| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 61 isolated in-memory automated unit and e2e integration tests |
 | **Frontend Framework** | **React** | `^18.3.1` | Declarative component UI library |
 | **Build Tool & Dev Server**| **Vite** | `^6.0.0` | Instant HMR and high-speed ES-module bundler |
 | **Styling** | **Tailwind CSS** | `^4.0.0` | Modern utility-first CSS via `@tailwindcss/vite` |
@@ -133,7 +133,7 @@ e:\Skill Analyzer\
 │   │   ├── config.py               # Pydantic BaseSettings loading from .env
 │   │   ├── database.py             # SQLite engine & session maker
 │   │   └── main.py                 # FastAPI application factory & CORS setup
-│   ├── tests/                      # Automated test suite (58 passing tests)
+│   ├── tests/                      # Automated test suite (61 passing tests)
 │   │   ├── conftest.py             # In-memory SQLite fixtures & TestClient
 │   │   ├── test_health.py          # Health-check probe tests
 │   │   ├── test_auth.py            # Registration, login, JWT validation tests
@@ -143,7 +143,7 @@ e:\Skill Analyzer\
 │   │   ├── test_skill_extraction_and_gap.py # Skill regex disambiguation & gap tests
 │   │   ├── test_roadmap.py         # Weekly hour budget & curriculum tests
 │   │   ├── test_e2e_workflow.py    # Comprehensive full-student journey e2e test
-│   │   └── test_cached_snapshots.py # Cached snapshots, benchmarks & paste flow tests (9 tests)
+│   │   └── test_cached_snapshots.py # Cached snapshots, benchmarks & paste flow tests (12 tests)
 │   ├── .env.example                # Backend configuration template
 │   ├── pytest.ini                  # Pytest configuration & warning filters
 │   └── requirements.txt            # Python dependencies
@@ -256,12 +256,12 @@ In **Terminal 1** (with virtual environment activated):
 pytest -v -c backend/pytest.ini backend/tests
 ```
 
-### Verified Test Suite Breakdown (58 Passing Tests)
+### Verified Test Suite Breakdown (61 Passing Tests)
 
 ```text
 backend/tests/test_analyses.py (7 tests)
 ...
-backend/tests/test_cached_snapshots.py (9 tests)
+backend/tests/test_cached_snapshots.py (12 tests)
   ✓ test_find_cached_snapshots_from_catalog
   ✓ test_find_cached_snapshots_from_database_precedence
   ✓ test_apply_cached_snapshot_to_analysis
@@ -271,6 +271,9 @@ backend/tests/test_cached_snapshots.py (9 tests)
   ✓ test_find_industry_role_benchmark
   ✓ test_apply_industry_benchmark_to_analysis
   ✓ test_api_use_industry_benchmark_flow
+  ✓ test_find_cached_snapshots_deloitte_and_mastercard
+  ✓ test_typo_tolerant_role_matching
+  ✓ test_disjunctive_programming_language_alternative_handling
 backend/tests/test_e2e_workflow.py (1 test)
   ✓ test_full_student_e2e_journey (Complete end-to-end integration lifecycle)
 ```

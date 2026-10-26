@@ -1,3 +1,4 @@
+import difflib
 import json
 import logging
 import re
@@ -65,8 +66,16 @@ def find_industry_role_benchmark(target_role: str) -> dict | None:
         if is_rel:
             return bm
 
-    # 3. Keyword heuristic fallbacks
-    if any(k in norm_target for k in ["data", "analyst", "bi", "analytics"]):
+    # 3. Keyword and fuzzy heuristic fallbacks (tolerant of typos like 'anaylst')
+    target_tokens = norm_target.split()
+
+    def fuzzy_match_token(keyword: str, threshold: float = 0.75) -> bool:
+        return any(
+            t == keyword or keyword in t or difflib.SequenceMatcher(None, t, keyword).ratio() >= threshold
+            for t in target_tokens
+        )
+
+    if fuzzy_match_token("analyst") or fuzzy_match_token("analytics") or any(k in norm_target for k in ["data", "bi"]):
         for bm in benchmarks:
             if bm["role_key"] == "data_analyst":
                 return bm
@@ -74,11 +83,11 @@ def find_industry_role_benchmark(target_role: str) -> dict | None:
         for bm in benchmarks:
             if bm["role_key"] == "devops_engineer":
                 return bm
-    elif any(k in norm_target for k in ["front", "ui", "web"]):
+    elif any(k in norm_target for k in ["front", "ui", "web"]) or fuzzy_match_token("frontend"):
         for bm in benchmarks:
             if bm["role_key"] == "frontend_engineer":
                 return bm
-    elif any(k in norm_target for k in ["back", "api", "server"]):
+    elif any(k in norm_target for k in ["back", "api", "server"]) or fuzzy_match_token("backend"):
         for bm in benchmarks:
             if bm["role_key"] == "backend_engineer":
                 return bm
@@ -159,6 +168,11 @@ def normalize_company_for_lookup(name: str) -> str:
         "cognizant": "cognizant",
         "cts": "cognizant",
         "accenture": "accenture",
+        "deloitte": "deloitte",
+        "deloittetouche": "deloitte",
+        "deloitteconsulting": "deloitte",
+        "mastercard": "mastercard",
+        "mastercardworldwide": "mastercard",
         "infosys": "infosys",
         "infy": "infosys",
         "google": "google",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listAnalyses, deleteAnalysis } from '../api/analyses';
-import { PlusCircle, Search, Trash2, ArrowRight, Building2, Briefcase, Clock, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, Search, Trash2, ArrowRight, Building2, Briefcase, Clock, Calendar, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 
@@ -60,11 +60,16 @@ const Dashboard = () => {
             <CheckCircle className="w-3.5 h-3.5" /> Archived Data
           </span>
         );
-      case 'no_matching_jobs':
       case 'company_not_verified':
         return (
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-            <AlertCircle className="w-3.5 h-3.5" /> {status.replace(/_/g, ' ')}
+            <AlertCircle className="w-3.5 h-3.5" /> Private ATS (Action Ready)
+          </span>
+        );
+      case 'no_matching_jobs':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <AlertCircle className="w-3.5 h-3.5" /> No Matching Openings
           </span>
         );
       case 'searching':
@@ -176,12 +181,23 @@ const Dashboard = () => {
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <Link
-                    to={`/analyses/${item.id}/roadmap`}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
-                  >
-                    Roadmap
-                  </Link>
+                  {item.status === 'company_not_verified' ? (
+                    <Link
+                      to={`/analyses/${item.id}`}
+                      className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg text-emerald-800 bg-emerald-100 hover:bg-emerald-200 transition"
+                      title="This employer uses a private career portal; click to apply verified benchmark or archive"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Resolve Requirements</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/analyses/${item.id}/roadmap`}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
+                    >
+                      Roadmap
+                    </Link>
+                  )}
                   <Link
                     to={`/analyses/${item.id}`}
                     className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition"

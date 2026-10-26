@@ -337,3 +337,108 @@ def test_api_use_industry_benchmark_flow(client):
     roadmap_data = roadmap_res.json()
     assert len(roadmap_data["items"]) >= 1
 
+
+def test_find_cached_snapshots_deloitte_and_mastercard(db_session):
+    """Verifies that Deloitte and Mastercard snapshots are found in the catalog."""
+    deloitte_matches = find_cached_snapshots(
+        company_name="Deloitte",
+        target_role="Technology Analyst",
+        db=db_session,
+    )
+    assert len(deloitte_matches) >= 1
+    assert deloitte_matches[0]["employer_name"] == "Deloitte"
+    assert "SQL" in deloitte_matches[0]["description_text"]
+
+    mastercard_matches = find_cached_snapshots(
+        company_name="Mastercard",
+        target_role="Software Engineer",
+        db=db_session,
+    )
+    assert len(mastercard_matches) >= 1
+    assert mastercard_matches[0]["employer_name"] == "Mastercard"
+    assert "Java" in mastercard_matches[0]["description_text"]
+
+
+def test_typo_tolerant_role_matching():
+    """Verifies that typos like 'Anaylst' match the correct role framework."""
+    anaylst_bm = find_industry_role_benchmark("Anaylst")
+    assert anaylst_bm is not None
+    assert anaylst_bm["role_key"] == "data_analyst"
+
+    accenture_anaylst_bm = find_industry_role_benchmark("Accenture Anaylst")
+    assert accenture_anaylst_bm is not None
+    assert accenture_anaylst_bm["role_key"] == "data_analyst"
+
+    devloper_bm = find_industry_role_benchmark("Devloper")
+    assert devloper_bm is not None
+    assert devloper_bm["role_key"] == "software_engineer"
+
+
+def test_disjunctive_programming_language_alternative_handling(client):
+    """
+    Verifies that when a job allows alternative languages ('Python, Java, or C++'),
+    a student reporting Python is NOT penalized for missing Java/C++, and those alternatives
+    are NOT placed on the study roadmap.
+    """
+    reg = client.post(
+        "/api/auth/register",
+        json={"name": "Disjunction Tester", "email": "disjunction@university.edu", "password": "SecurePassword123!"},
+    )
+    assert reg.status_code == 201
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    create_res = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Tech Corp",
+            "target_role": "Software Engineer",
+            "weekly_hours": 10,
+            "student_skills": [
+                {"name": "Python", "proficiency": "intermediate"},
+            ],
+        },
+    )
+    assert create_res.status_code == 201
+    analysis_id = create_res.json()["id"]
+
+    # Paste description with alternative languages
+    paste_res = client.post(
+        f"/api/analyses/{analysis_id}/paste-job-description",
+        headers=headers,
+        json={
+            "job_title": "Software Engineer",
+            "description_text": (
+                "Tech Corp is hiring. "
+                "Required: Strong programming proficiency in at least one modern language such as Python, Java, or C++. "
+                "Required: Hands-on experience with SQL and relational databases. "
+                "Required: Proficiency with Git version control."
+            ),
+        },
+    )
+    assert paste_res.status_code == 200
+
+    gap_res = client.post(f"/api/analyses/{analysis_id}/run-gap-analysis", headers=headers)
+    assert gap_res.status_code == 200
+    gap_data = gap_res.json()
+
+    # Python is covered
+    assert any(g["canonical_skill"] == "python" and g["status"] == "self_reported_covered" for g in gap_data["skill_gaps"])
+
+    # Java and C++ are NOT missing required skills; they are satisfied alternatives!
+    assert not any(g["canonical_skill"] in ("java", "c++") and g["status"] == "missing" for g in gap_data["skill_gaps"])
+
+    # SQL and Git are missing
+    assert any(g["canonical_skill"] == "sql" and g["status"] == "missing" for g in gap_data["skill_gaps"])
+    assert any(g["canonical_skill"] == "git" and g["status"] == "missing" for g in gap_data["skill_gaps"])
+
+    # Generate roadmap: verify ONLY SQL and Git are scheduled, NOT Java or C++!
+    roadmap_res = client.post(f"/api/analyses/{analysis_id}/roadmap", headers=headers)
+    assert roadmap_res.status_code == 201
+    roadmap_items = roadmap_res.json()["items"]
+    scheduled_skills = [it["canonical_skill"] for it in roadmap_items]
+    assert "java" not in scheduled_skills
+    assert "c++" not in scheduled_skills
+    assert "sql" in scheduled_skills
+
+
