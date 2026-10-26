@@ -1,0 +1,50 @@
+[
+  {
+    "role_key": "software_engineer",
+    "role_title": "Software Engineer / Software Developer",
+    "aliases": ["software engineer", "software developer", "sde", "application developer", "programmer", "software development engineer"],
+    "description_text": "Role Summary: Standard industry technical requirements for Software Engineers across enterprise and tech organizations.\n\nCore Technical Requirements:\n- Required: Strong programming proficiency in at least one modern language such as Python, Java, C++, or Go.\n- Required: Solid foundation in Data Structures, Algorithms, and Object-Oriented Programming (OOP).\n- Required: Experience with SQL and relational database management (PostgreSQL, MySQL, or Oracle).\n- Required: Hands-on experience designing and integrating REST APIs and microservices.\n- Required: Proficiency with Git version control systems and Linux command-line environments.\n\nPreferred Qualifications:\n- Experience with Docker containerization and Kubernetes orchestration.\n- Experience deploying services to cloud infrastructure (Amazon Web Services AWS, Microsoft Azure, or Google Cloud Platform GCP).\n- Familiarity with automated testing and continuous integration (CI/CD) pipelines."
+  },
+  {
+    "role_key": "data_analyst",
+    "role_title": "Data Analyst / Business Intelligence Specialist",
+    "aliases": ["data analyst", "bi analyst", "business intelligence analyst", "analytics specialist", "data specialist", "reporting analyst"],
+    "description_text": "Role Summary: Standard industry technical requirements for Data Analysts and Business Intelligence specialists.\n\nCore Technical Requirements:\n- Required: Advanced proficiency in SQL for data extraction, multi-table joins, aggregations, and window functions.\n- Required: Practical experience in Python with Pandas and NumPy libraries for data cleaning and manipulation.\n- Required: Hands-on experience developing interactive dashboards and KPI reports using Power BI or Tableau.\n- Required: Experience working with relational databases such as PostgreSQL, MySQL, or SQL Server.\n- Strong data storytelling and quantitative problem-solving abilities.\n\nPreferred Qualifications:\n- Foundational knowledge of Machine Learning algorithms and Scikit-Learn.\n- Familiarity with cloud data warehouses and big data frameworks like Apache Spark.\n- Experience with version control using Git."
+  },
+  {
+    "role_key": "backend_engineer",
+    "role_title": "Backend Software Engineer",
+    "aliases": ["backend engineer", "backend developer", "api engineer", "server side developer"],
+    "description_text": "Role Summary: Standard industry technical requirements for Backend Software Engineers.\n\nCore Technical Requirements:\n- Required: Strong proficiency in backend programming languages such as Python, Java, Go, or Node.js.\n- Required: Experience with enterprise backend frameworks like Spring Boot, FastAPI, Django, or Express.\n- Required: Deep understanding of REST API design, HTTP protocols, and microservices architecture.\n- Required: Proficiency with SQL and relational databases (PostgreSQL or MySQL) including schema design and indexing.\n- Required: Hands-on experience with Git version control and Linux environments.\n\nPreferred Qualifications:\n- Experience with Docker containerization and Kubernetes cluster management.\n- Hands-on experience with in-memory caching solutions like Redis.\n- Knowledge of distributed systems, message queues (Kafka/RabbitMQ), and CI/CD pipelines.\n- Experience with cloud platforms (AWS, Azure, or GCP)."
+  },
+  {
+    "role_key": "frontend_engineer",
+    "role_title": "Frontend Software Engineer / Web Developer",
+    "aliases": ["frontend engineer", "frontend developer", "ui engineer", "web developer", "react developer", "front end developer"],
+    "description_text": "Role Summary: Standard industry technical requirements for Frontend Web Engineers.\n\nCore Technical Requirements:\n- Required: Advanced proficiency in JavaScript (ES6+), TypeScript, HTML5, and modern CSS.\n- Required: Deep practical expertise with React component architecture, state management, and lifecycle hooks.\n- Required: Experience integrating backend REST APIs and handling asynchronous data streams.\n- Required: Strong understanding of responsive web design and modern build tooling.\n- Required: Version control with Git.\n\nPreferred Qualifications:\n- Experience with full-stack meta-frameworks like Next.js.\n- Experience with Tailwind CSS or utility-first styling systems.\n- Experience with GraphQL API consumption.\n- Familiarity with frontend unit and integration testing."
+  },
+  {
+    "role_key": "full_stack_engineer",
+    "role_title": "Full Stack Software Engineer",
+    "aliases": ["full stack engineer", "full stack developer", "fullstack developer", "full stack software engineer"],
+    "description_text": "Role Summary: Standard industry technical requirements for Full Stack Software Engineers.\n\nCore Technical Requirements:\n- Required: Frontend engineering proficiency in JavaScript, TypeScript, and modern React.\n- Required: Backend engineering expertise using Python, Node.js, or Java.\n- Required: Practical experience designing REST APIs and connecting frontend client applications.\n- Required: Solid proficiency in database querying with SQL (PostgreSQL, MySQL) or NoSQL (MongoDB).\n- Required: Proficiency with Git version control.\n\nPreferred Qualifications:\n- Experience with Docker containerization and cloud deployment on AWS or Azure.\n- Familiarity with CI/CD automation pipelines.\n- Experience with Next.js full-stack development."
+  },
+  {
+    "role_key": "devops_engineer",
+    "role_title": "DevOps Engineer / Cloud Infrastructure Engineer",
+    "aliases": ["devops engineer", "cloud engineer", "site reliability engineer", "sre", "platform engineer", "infrastructure engineer"],
+    "description_text": "Role Summary: Standard industry technical requirements for DevOps and Cloud Engineers.\n\nCore Technical Requirements:\n- Required: Deep expertise in Linux operating system administration, shell scripting, and Python automation.\n- Required: Hands-on experience with containerization using Docker and container orchestration with Kubernetes.\n- Required: Experience provisioning and managing cloud infrastructure on Amazon Web Services (AWS), Microsoft Azure, or GCP.\n- Required: Experience configuring automated CI/CD deployment pipelines.\n- Required: Version control proficiency with Git.\n\nPreferred Qualifications:\n- Experience with Infrastructure as Code (IaC) using Terraform.\n- Experience with system observability and monitoring tools.\n- Knowledge of cloud networking, security, and microservices architecture."
+  },
+  {
+    "role_key": "data_scientist",
+    "role_title": "Data Scientist / Machine Learning Engineer",
+    "aliases": ["data scientist", "machine learning engineer", "ml engineer", "ai engineer"],
+    "description_text": "Role Summary: Standard industry technical requirements for Data Scientists and Machine Learning Engineers.\n\nCore Technical Requirements:\n- Required: Strong programming expertise in Python with extensive use of Pandas, NumPy, and Scikit-Learn.\n- Required: Solid understanding of Machine Learning algorithms (regression, classification, clustering, ensemble methods).\n- Required: Proficiency in SQL for complex data extraction and feature engineering.\n- Required: Strong statistical analysis, hypothesis testing, and quantitative modeling foundations.\n- Required: Git version control.\n\nPreferred Qualifications:\n- Experience with Deep Learning frameworks like PyTorch or TensorFlow.\n- Experience with Docker and model deployment as REST APIs (FastAPI/Flask).\n- Exposure to distributed data processing with Apache Spark and cloud ML platforms."
+  },
+  {
+    "role_key": "qa_engineer",
+    "role_title": "Quality Assurance / Test Automation Engineer",
+    "aliases": ["qa engineer", "quality assurance engineer", "test automation engineer", "sdet", "test engineer"],
+    "description_text": "Role Summary: Standard industry technical requirements for QA and Test Automation Engineers.\n\nCore Technical Requirements:\n- Required: Practical programming skills in Python or Java for automated test development.\n- Required: Experience designing automated end-to-end test suites using industry tools (Selenium, Playwright, or Cypress).\n- Required: Practical knowledge of REST API testing and validation.\n- Required: Familiarity with SQL databases for test data setup and verification.\n- Required: Version control with Git.\n\nPreferred Qualifications:\n- Experience integrating automated tests into continuous integration (CI/CD) pipelines.\n- Exposure to Docker containerized test environments.\n- Knowledge of performance and load testing."
+  }
+]

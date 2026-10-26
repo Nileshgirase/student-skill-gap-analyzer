@@ -22,6 +22,8 @@ from app.services.job_search_service import (
     find_cached_snapshots,
     apply_cached_snapshot_to_analysis,
     create_user_provided_snapshot,
+    find_industry_role_benchmark,
+    apply_industry_benchmark_to_analysis,
 )
 from app.services.skill_extractor import extract_skills_from_text
 from app.services.gap_analyzer import compute_skill_gap_analysis
@@ -143,6 +145,11 @@ def get_analysis(
             response_data.cached_snapshot_title = cached_matches[0]["job_title"]
             response_data.cached_snapshot_date = cached_matches[0]["fetched_at"]
 
+        benchmark = find_industry_role_benchmark(analysis.target_role)
+        if benchmark:
+            response_data.has_industry_benchmark = True
+            response_data.industry_benchmark_role = benchmark.get("role_title")
+
     return response_data
 
 
@@ -255,6 +262,8 @@ def search_jobs_for_analysis(
     cached_title = None
     cached_date = None
     cached_emp = None
+    has_benchmark = False
+    benchmark_title = None
 
     if not snapshots:
         cached_matches = find_cached_snapshots(
@@ -270,6 +279,11 @@ def search_jobs_for_analysis(
             cached_date = cached_matches[0]["fetched_at"]
             cached_emp = cached_matches[0]["employer_name"]
 
+        benchmark = find_industry_role_benchmark(analysis.target_role)
+        if benchmark:
+            has_benchmark = True
+            benchmark_title = benchmark.get("role_title")
+
     return JobSearchResponse(
         status=status_code,
         company=analysis.company_name,
@@ -281,6 +295,46 @@ def search_jobs_for_analysis(
         cached_snapshot_title=cached_title,
         cached_snapshot_date=cached_date,
         cached_snapshot_employer=cached_emp,
+        has_industry_benchmark=has_benchmark,
+        industry_benchmark_role=benchmark_title,
+    )
+
+
+@router.post(
+    "/{analysis_id}/use-industry-benchmark",
+    response_model=JobSearchResponse,
+    summary="Apply Industry Standard Role Benchmark",
+    description=(
+        "Applies a standardized, verified industry technical competency framework for the target role "
+        "when the company does not publish a free public ATS feed."
+    ),
+)
+def use_industry_benchmark(
+    analysis_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    analysis = (
+        db.query(Analysis)
+        .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)
+        .first()
+    )
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis not found.",
+        )
+
+    snapshot = apply_industry_benchmark_to_analysis(analysis=analysis, db=db)
+
+    return JobSearchResponse(
+        status="verified_jobs_found",
+        company=analysis.company_name,
+        target_role=analysis.target_role,
+        message=f"Applied industry standard competency benchmark for '{snapshot.job_title}'.",
+        jobs=[snapshot],
+        has_cached_snapshots=False,
+        has_industry_benchmark=False,
     )
 
 

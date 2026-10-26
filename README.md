@@ -86,7 +86,7 @@ flowchart TD
 | **Password Security** | **Argon2id** (`pwdlib`) | `^0.2.0` | Modern, GPU-resistant memory-hard password hashing |
 | **Authentication** | **PyJWT** | `^2.10.0` | Stateless HMAC-SHA256 bearer tokens with 30m expiry |
 | **Web Scraping / Sanitization** | **BeautifulSoup4** | `^4.12.0` | Strips tags, scripts, and normalizes block-level whitespace |
-| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 49 isolated in-memory automated unit and e2e integration tests |
+| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 58 isolated in-memory automated unit and e2e integration tests |
 | **Frontend Framework** | **React** | `^18.3.1` | Declarative component UI library |
 | **Build Tool & Dev Server**| **Vite** | `^6.0.0` | Instant HMR and high-speed ES-module bundler |
 | **Styling** | **Tailwind CSS** | `^4.0.0` | Modern utility-first CSS via `@tailwindcss/vite` |
@@ -113,9 +113,10 @@ e:\Skill Analyzer\
 │   │   │   ├── job_snapshot.py     # Verified posting snapshots, hashes & URLs
 │   │   │   ├── required_skill.py   # Extracted skills with sentence evidence quotes
 │   │   │   └── roadmap_item.py     # Generated weekly curriculum items & status
-│   │   ├── resources/              # Free educational catalog
+│   │   ├── resources/              # Free educational catalog & role benchmarks
 │   │   │   ├── learning_resources.json  # Curated catalog with verified free URLs
-│   │   │   └── archived_job_snapshots.json # Verified historical postings archive (Approach 1)
+│   │   │   ├── archived_job_snapshots.json # Verified historical postings archive (Approach 1)
+│   │   │   └── industry_role_benchmarks.json # Standard technical competency frameworks (Approach 2)
 │   │   ├── routes/                 # FastAPI API route controllers
 │   │   │   ├── health.py           # /api/health with SELECT 1 SQLite probe
 │   │   │   ├── auth.py             # /api/auth/register, login, me
@@ -132,7 +133,7 @@ e:\Skill Analyzer\
 │   │   ├── config.py               # Pydantic BaseSettings loading from .env
 │   │   ├── database.py             # SQLite engine & session maker
 │   │   └── main.py                 # FastAPI application factory & CORS setup
-│   ├── tests/                      # Automated test suite (53 passing tests)
+│   ├── tests/                      # Automated test suite (58 passing tests)
 │   │   ├── conftest.py             # In-memory SQLite fixtures & TestClient
 │   │   ├── test_health.py          # Health-check probe tests
 │   │   ├── test_auth.py            # Registration, login, JWT validation tests
@@ -142,7 +143,7 @@ e:\Skill Analyzer\
 │   │   ├── test_skill_extraction_and_gap.py # Skill regex disambiguation & gap tests
 │   │   ├── test_roadmap.py         # Weekly hour budget & curriculum tests
 │   │   ├── test_e2e_workflow.py    # Comprehensive full-student journey e2e test
-│   │   └── test_cached_snapshots.py # Historical/cached last posting tests (Approach 1)
+│   │   └── test_cached_snapshots.py # Cached snapshots, benchmarks & paste flow tests (9 tests)
 │   ├── .env.example                # Backend configuration template
 │   ├── pytest.ini                  # Pytest configuration & warning filters
 │   └── requirements.txt            # Python dependencies
@@ -255,16 +256,21 @@ In **Terminal 1** (with virtual environment activated):
 pytest -v -c backend/pytest.ini backend/tests
 ```
 
-### Verified Test Suite Breakdown (53 Passing Tests)
+### Verified Test Suite Breakdown (58 Passing Tests)
 
 ```text
 backend/tests/test_analyses.py (7 tests)
 ...
-backend/tests/test_cached_snapshots.py (4 tests)
+backend/tests/test_cached_snapshots.py (9 tests)
   ✓ test_find_cached_snapshots_from_catalog
   ✓ test_find_cached_snapshots_from_database_precedence
   ✓ test_apply_cached_snapshot_to_analysis
   ✓ test_api_use_cached_posting_and_run_gap_analysis
+  ✓ test_find_cached_snapshots_for_hcltech_and_alias
+  ✓ test_api_paste_job_description_flow
+  ✓ test_find_industry_role_benchmark
+  ✓ test_apply_industry_benchmark_to_analysis
+  ✓ test_api_use_industry_benchmark_flow
 backend/tests/test_e2e_workflow.py (1 test)
   ✓ test_full_student_e2e_journey (Complete end-to-end integration lifecycle)
 ```
@@ -357,6 +363,24 @@ All protected endpoints require an `Authorization: Bearer <token>` header.
 - **Auth**: Bearer Token (Owner only)
 - **Action**: Attaches the most recent verified historical snapshot (from the local database cache or verified archive catalog) to the analysis when live feeds have no open listings. Marks the snapshot with `is_stale: true`, `verification_status: "archived_snapshot"`, and an explicit provenance note.
 - **Response**: `200 OK` with `status: "archived_jobs_found"`, allowing immediate evidence-backed gap analysis and roadmap generation.
+
+#### `POST /api/analyses/{id}/use-industry-benchmark` (Approach 2)
+- **Auth**: Bearer Token (Owner only)
+- **Action**: Instant 1-click fallback applying a verified industry competency benchmark (e.g. ISO/Standard Software Engineer, Data Analyst, DevOps) when the target company (e.g., Lemma, RBIS, TCS) does not publish an open public ATS feed.
+- **Response**: `200 OK` with `status: "verified_jobs_found"`, setting `verification_status: "industry_benchmark"`, ready for instant gap analysis.
+
+#### `POST /api/analyses/{id}/paste-job-description`
+- **Auth**: Bearer Token (Owner only)
+- **Payload**:
+  ```json
+  {
+    "description_text": "Required: 2+ years of Java, Spring Boot, and PostgreSQL...",
+    "job_title": "Java Developer",
+    "source_url": "https://company.com/careers/java-dev"
+  }
+  ```
+- **Action**: Ingests direct student-provided job descriptions (e.g., copied from LinkedIn, Naukri, or enterprise portals), cleaning HTML and generating a `user_provided_posting` snapshot with honest student provenance.
+- **Response**: `200 OK` with `status: "verified_jobs_found"`.
 
 #### `POST /api/analyses/{id}/run-gap-analysis`
 - **Auth**: Bearer Token

@@ -99,6 +99,8 @@ class AnalysisDetailResponse(BaseModel):
     has_cached_snapshots: bool = False
     cached_snapshot_title: str | None = None
     cached_snapshot_date: datetime | None = None
+    has_industry_benchmark: bool = False
+    industry_benchmark_role: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

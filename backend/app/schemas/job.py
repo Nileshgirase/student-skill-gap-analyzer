@@ -35,6 +35,8 @@ class JobSearchResponse(BaseModel):
     cached_snapshot_title: str | None = None
     cached_snapshot_date: datetime | None = None
     cached_snapshot_employer: str | None = None
+    has_industry_benchmark: bool = False
+    industry_benchmark_role: str | None = None
 
 
 class UserProvidedJobRequest(BaseModel):

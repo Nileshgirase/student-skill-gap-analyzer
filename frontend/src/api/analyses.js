@@ -30,6 +30,11 @@ export const useCachedPosting = async (analysisId) => {
   return response.data;
 };
 
+export const useIndustryBenchmark = async (analysisId) => {
+  const response = await api.post(`/analyses/${analysisId}/use-industry-benchmark`);
+  return response.data;
+};
+
 export const pasteJobDescription = async (analysisId, payload) => {
   const response = await api.post(`/analyses/${analysisId}/paste-job-description`, payload);
   return response.data;

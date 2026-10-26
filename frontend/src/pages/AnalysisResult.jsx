@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getAnalysis, runGapAnalysis, searchJobs, useCachedPosting, pasteJobDescription } from '../api/analyses';
+import { getAnalysis, runGapAnalysis, searchJobs, useCachedPosting, pasteJobDescription, useIndustryBenchmark } from '../api/analyses';
 import { Building2, Briefcase, RefreshCw, MapPin, ExternalLink, Calendar, AlertTriangle, ArrowRight, BookOpen, Layers, Clock, History, FileText, Sparkles, UploadCloud } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
@@ -74,6 +74,18 @@ const AnalysisResult = () => {
       await loadData();
     } catch (err) {
       alert(err.response?.data?.detail || 'Failed to analyze pasted job description.');
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  const handleUseBenchmark = async () => {
+    setActionLoading('Applying industry standard competency benchmark...');
+    try {
+      await useIndustryBenchmark(analysisId);
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to apply industry benchmark.');
     } finally {
       setActionLoading('');
     }
@@ -170,6 +182,38 @@ const AnalysisResult = () => {
             {analysis.status === 'source_unavailable' &&
               `The upstream career feeds timed out or were temporarily unreachable. Please retry shortly.`}
           </p>
+
+          {/* Primary 1-Click Action: Industry Standard Benchmark */}
+          <div className="mt-6 p-4 sm:p-5 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 rounded-2xl text-left shadow-sm">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    Instant 1-Click Solution
+                  </span>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Analyze Industry Standard Requirements for {analysis.industry_benchmark_role || analysis.target_role}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Since <strong>{analysis.company_name}</strong> does not publish an open public ATS feed (like Greenhouse or Lever), you can instantly analyze the standard technical competency framework expected by employers across the industry for <strong>{analysis.target_role}</strong>.
+                </p>
+                <div className="mt-3.5">
+                  <button
+                    onClick={handleUseBenchmark}
+                    disabled={!!actionLoading}
+                    className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shadow-emerald-200 transition disabled:opacity-50"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>{actionLoading ? 'Loading Benchmark...' : `Analyze ${analysis.industry_benchmark_role || analysis.target_role} Benchmark`}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {analysis.has_cached_snapshots && (
             <div className="mt-6 p-4 sm:p-5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl text-left shadow-sm">

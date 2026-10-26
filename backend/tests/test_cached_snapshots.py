@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from app.services.job_search_service import (
     find_cached_snapshots,
     apply_cached_snapshot_to_analysis,
+    find_industry_role_benchmark,
+    apply_industry_benchmark_to_analysis,
 )
 from app.models.analysis import Analysis
 from app.models.job_snapshot import JobSnapshot
@@ -229,3 +231,109 @@ def test_api_paste_job_description_flow(client):
     roadmap_res = client.post(f"/api/analyses/{analysis_id}/roadmap", headers=headers)
     assert roadmap_res.status_code == 201
     assert len(roadmap_res.json()["items"]) >= 1
+
+
+def test_find_industry_role_benchmark():
+    """Verifies matching of industry standard benchmarks across different roles and keywords."""
+    swe = find_industry_role_benchmark("Software Engineer")
+    assert swe is not None
+    assert swe["role_key"] == "software_engineer"
+    assert "Python" in swe["description_text"] or "algorithms" in swe["description_text"].lower()
+
+    da = find_industry_role_benchmark("Data Analyst")
+    assert da is not None
+    assert da["role_key"] == "data_analyst"
+    assert "SQL" in da["description_text"]
+
+    devops = find_industry_role_benchmark("Cloud Platform & DevOps Engineer")
+    assert devops is not None
+    assert devops["role_key"] == "devops_engineer"
+
+    # Edge case: Arbitrary specialized title should fallback safely to standard engineering benchmark
+    uncommon = find_industry_role_benchmark("Junior Systems Apprentice")
+    assert uncommon is not None
+    assert "description_text" in uncommon
+
+
+def test_apply_industry_benchmark_to_analysis(db_session):
+    """Verifies that apply_industry_benchmark_to_analysis attaches a benchmark snapshot with transparent provenance."""
+    user = User(name="Lemma Candidate", email="candidate@lemma.test", password_hash="dummy")
+    db_session.add(user)
+    db_session.commit()
+
+    analysis = Analysis(user_id=user.id, company_name="Lemma", target_role="Data Analyst", weekly_hours=10)
+    db_session.add(analysis)
+    db_session.commit()
+
+    snapshot = apply_industry_benchmark_to_analysis(analysis=analysis, db=db_session)
+    assert snapshot.employer_name == "Lemma (Industry Benchmark)"
+    assert snapshot.verification_status == "industry_benchmark"
+    assert snapshot.source_type == "industry_benchmark"
+    assert snapshot.source_name == "Tech Industry Competency Framework"
+    assert analysis.status == "verified_jobs_found"
+    assert "SQL" in snapshot.description_text
+
+
+def test_api_use_industry_benchmark_flow(client):
+    """Verifies end-to-end API flow using industry standard benchmark for companies without public ATS (e.g. RBIS, Lemma)."""
+    # 1. Register student
+    reg = client.post(
+        "/api/auth/register",
+        json={"name": "RBIS Candidate", "email": "candidate@rbis.edu", "password": "SecurePassword123!"},
+    )
+    assert reg.status_code == 201
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    # 2. Create analysis for RBIS Data Analyst
+    create_res = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "RBIS",
+            "target_role": "Data Analyst",
+            "weekly_hours": 10,
+            "student_skills": [
+                {"name": "Python", "proficiency": "intermediate"},
+                {"name": "Git", "proficiency": "beginner"},
+            ],
+        },
+    )
+    assert create_res.status_code == 201
+    analysis_id = create_res.json()["id"]
+
+    # 3. Live search for RBIS returns company_not_verified with has_industry_benchmark = True
+    search_res = client.post(f"/api/analyses/{analysis_id}/search-jobs", headers=headers)
+    assert search_res.status_code == 200
+    search_data = search_res.json()
+    assert search_data["status"] == "company_not_verified"
+    assert search_data["has_industry_benchmark"] is True
+    assert "Data Analyst" in search_data["industry_benchmark_role"]
+
+    # 4. Student clicks 1-click industry benchmark
+    benchmark_res = client.post(f"/api/analyses/{analysis_id}/use-industry-benchmark", headers=headers)
+    assert benchmark_res.status_code == 200
+    benchmark_data = benchmark_res.json()
+    assert benchmark_data["status"] == "verified_jobs_found"
+    assert len(benchmark_data["jobs"]) == 1
+    snap = benchmark_data["jobs"][0]
+    assert snap["verification_status"] == "industry_benchmark"
+    assert snap["source_type"] == "industry_benchmark"
+    assert "Tech Industry Competency Framework" in snap["source_name"]
+
+    # 5. Run gap analysis
+    gap_res = client.post(f"/api/analyses/{analysis_id}/run-gap-analysis", headers=headers)
+    assert gap_res.status_code == 200
+    gap_data = gap_res.json()
+    assert gap_data["coverage_percentage"] is not None
+    assert len(gap_data["skill_gaps"]) >= 2
+    # Python was declared by student, SQL is in the Data Analyst benchmark
+    assert any(g["canonical_skill"] == "python" and g["status"] == "self_reported_covered" for g in gap_data["skill_gaps"])
+    assert any(g["canonical_skill"] == "sql" and g["status"] == "missing" for g in gap_data["skill_gaps"])
+    assert all("evidence_text" in g and g["evidence_text"] is not None for g in gap_data["skill_gaps"])
+
+    # 6. Generate roadmap
+    roadmap_res = client.post(f"/api/analyses/{analysis_id}/roadmap", headers=headers)
+    assert roadmap_res.status_code == 201
+    roadmap_data = roadmap_res.json()
+    assert len(roadmap_data["items"]) >= 1
+
