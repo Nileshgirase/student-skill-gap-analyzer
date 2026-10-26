@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -56,11 +56,50 @@ def register(payload: UserRegisterRequest, db: Session = Depends(get_db)):
     "/login",
     response_model=TokenResponse,
     summary="User Login",
-    description="Authenticates user credentials and returns a JWT bearer access token.",
+    description=(
+        "Authenticates user credentials and returns a JWT bearer access token. "
+        "Supports both JSON payloads ({email/username, password}) and OAuth2 Form Data ({username, password})."
+    ),
 )
-def login(payload: UserLoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email).first()
-    if not user or not verify_password(payload.password, user.password_hash):
+async def login(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    content_type = request.headers.get("content-type", "")
+    login_id = ""
+    password = ""
+
+    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        form = await request.form()
+        login_id = str(form.get("username") or form.get("email") or "").strip()
+        password = str(form.get("password") or "")
+    else:
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid request body. Expected JSON or Form Data.",
+            )
+        login_id = str(body.get("email") or body.get("username") or "").strip()
+        password = str(body.get("password") or "")
+
+    if not login_id or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Both email/username and password are required.",
+        )
+
+    # Support authentication by registered email OR student name
+    user = (
+        db.query(User)
+        .filter(
+            (User.email == login_id.lower()) | (User.name.ilike(login_id))
+        )
+        .first()
+    )
+
+    if not user or not verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
