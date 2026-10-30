@@ -33,6 +33,18 @@ class User(Base):
         cascade="all, delete-orphan",
         order_by="Analysis.created_at.desc()",
     )
+    profile = relationship(
+        "StudentProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    password_resets = relationship(
+        "PasswordResetToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        order_by="PasswordResetToken.created_at.desc()",
+    )
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"

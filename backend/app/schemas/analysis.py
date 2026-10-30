@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from app.schemas.job import JobSnapshotResponse
+from app.services.role_validator import validate_it_role
 
 ProficiencyType = Literal["beginner", "intermediate", "advanced", "unknown"]
 
@@ -61,12 +62,23 @@ class AnalysisCreateRequest(BaseModel):
         description="List of current skills and self-reported proficiencies",
     )
 
-    @field_validator("company_name", "target_role")
+    @field_validator("company_name")
     @classmethod
-    def clean_text_fields(cls, value: str) -> str:
+    def clean_company_name(cls, value: str) -> str:
         clean = value.strip()
         if not clean:
-            raise ValueError("Field cannot be blank or only whitespace.")
+            raise ValueError("Company name cannot be blank or only whitespace.")
+        return clean
+
+    @field_validator("target_role")
+    @classmethod
+    def validate_role_is_it_domain(cls, value: str) -> str:
+        clean = value.strip()
+        if not clean:
+            raise ValueError("Target role cannot be blank or only whitespace.")
+        is_valid, err_msg = validate_it_role(clean)
+        if not is_valid:
+            raise ValueError(err_msg)
         return clean
 
 

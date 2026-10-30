@@ -13,22 +13,47 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [slowServerNotice, setSlowServerNotice] = useState(false);
+
   const isExpired = new URLSearchParams(location.search).get('expired') === 'true';
+  const isResetSuccess = new URLSearchParams(location.search).get('reset') === 'success';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSlowServerNotice(false);
     setSubmitting(true);
+
+    const timer = setTimeout(() => {
+      setSlowServerNotice(true);
+    }, 4000);
 
     try {
       await login(email, password);
+      clearTimeout(timer);
       const origin = location.state?.from?.pathname || '/dashboard';
       navigate(origin, { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Invalid email or password.';
-      setError(msg);
+      clearTimeout(timer);
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError(err.response.data?.detail || 'Invalid email or password. Please verify your credentials.');
+        } else if (err.response.status === 422) {
+          setError('Please provide a valid email address and password.');
+        } else if (err.response.status >= 500) {
+          setError('The server encountered a temporary error or is restarting. Please try again shortly.');
+        } else {
+          setError(err.response.data?.detail || 'Authentication failed. Please try again.');
+        }
+      } else if (err.code === 'ECONNABORTED') {
+        setError('Connection timed out. The server may be waking up from an idle state. Please wait a few moments and try again.');
+      } else {
+        setError('Network error: Unable to reach the server. Please check your internet connection or try again in a moment.');
+      }
     } finally {
+      clearTimeout(timer);
       setSubmitting(false);
+      setSlowServerNotice(false);
     }
   };
 
@@ -45,6 +70,13 @@ const Login = () => {
           </p>
         </div>
 
+        {isResetSuccess && (
+          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5 text-xs text-emerald-800">
+            <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <span>Your password has been successfully reset. Please sign in with your new password.</span>
+          </div>
+        )}
+
         {isExpired && (
           <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-800">
             <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -56,6 +88,13 @@ const Login = () => {
           <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <span>{error}</span>
+          </div>
+        )}
+
+        {slowServerNotice && submitting && (
+          <div className="mb-5 p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5 text-xs text-blue-800 animate-pulse">
+            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <span>Connecting to backend service... If this is your first request after inactivity, the server is waking up. Please hold on.</span>
           </div>
         )}
 
@@ -76,7 +115,12 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700">Password</label>
+              <Link to="/forgot-password" className="text-xs font-medium text-blue-600 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input

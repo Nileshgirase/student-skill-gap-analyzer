@@ -12,6 +12,7 @@ from app.models.job_snapshot import JobSnapshot
 from app.connectors.base import BaseJobConnector, NormalizedJob
 from app.connectors.greenhouse import GreenhouseConnector, calculate_role_relevance
 from app.connectors.lever import LeverConnector
+from app.services.role_validator import validate_it_role
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +47,13 @@ def get_industry_benchmarks_catalog() -> list[dict]:
 def find_industry_role_benchmark(target_role: str) -> dict | None:
     """
     Finds the best matching industry role benchmark using token overlap and aliases.
-    Always provides a fallback to general software engineer if it's an engineering title.
+    Only returns a benchmark if the role is a recognized, valid IT/technology role.
+    Never returns generic fallback benchmarks for non-IT or invalid roles.
     """
+    is_valid, _ = validate_it_role(target_role)
+    if not is_valid:
+        return None
+
     benchmarks = get_industry_benchmarks_catalog()
     if not benchmarks:
         return None
@@ -100,12 +106,13 @@ def find_industry_role_benchmark(target_role: str) -> dict | None:
             if bm["role_key"] == "qa_engineer":
                 return bm
 
-    # Default to general software engineer benchmark
-    for bm in benchmarks:
-        if bm["role_key"] == "software_engineer":
-            return bm
+    # General software, systems, or application developer
+    if any(k in norm_target for k in ["software", "developer", "programmer", "sde", "swe", "application", "systems"]):
+        for bm in benchmarks:
+            if bm["role_key"] == "software_engineer":
+                return bm
 
-    return benchmarks[0]
+    return None
 
 
 def apply_industry_benchmark_to_analysis(

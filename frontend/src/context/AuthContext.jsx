@@ -19,9 +19,15 @@ export const AuthProvider = ({ children }) => {
           const profile = await getMe();
           setUser(profile);
           localStorage.setItem('user', JSON.stringify(profile));
-        } catch {
-          // Token is invalid or expired
-          logout();
+        } catch (err) {
+          // Only clear credentials if the server explicitly confirmed the token is invalid/expired (401)
+          if (err.response && err.response.status === 401) {
+            logout();
+          } else {
+            // Server might be sleeping (Render cold start) or network is slow;
+            // keep the cached user profile so student session is not wiped!
+            console.warn('Backend wake-up delay or network issue during auth init; preserving session.');
+          }
         }
       }
       setLoading(false);

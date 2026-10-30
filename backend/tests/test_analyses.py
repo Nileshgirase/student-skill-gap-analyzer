@@ -92,19 +92,19 @@ def test_list_analyses_ownership_scoping(client, user_a_headers, user_b_headers)
     # User A creates 2 analyses
     client.post(
         "/api/analyses",
-        json={"company_name": "Company A1", "target_role": "Role A1", "weekly_hours": 8},
+        json={"company_name": "Company A1", "target_role": "Software Engineer", "weekly_hours": 8},
         headers=user_a_headers,
     )
     client.post(
         "/api/analyses",
-        json={"company_name": "Company A2", "target_role": "Role A2", "weekly_hours": 12},
+        json={"company_name": "Company A2", "target_role": "Data Analyst", "weekly_hours": 12},
         headers=user_a_headers,
     )
 
     # User B creates 1 analysis
     client.post(
         "/api/analyses",
-        json={"company_name": "Company B1", "target_role": "Role B1", "weekly_hours": 6},
+        json={"company_name": "Company B1", "target_role": "Backend Engineer", "weekly_hours": 6},
         headers=user_b_headers,
     )
 

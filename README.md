@@ -18,10 +18,12 @@
    - [Disambiguated Evidence Extraction](#2-disambiguated-evidence-extraction)
    - [Skill-Gap Categorization & Coverage Formula](#3-skill-gap-categorization--coverage-formula)
    - [Weekly Budget-Constrained Roadmap Scheduling](#4-weekly-budget-constrained-roadmap-scheduling)
+   - [IT Domain Role Validation & Typo Tolerance](#5-it-domain-role-validation--typo-tolerance)
 9. [Extensibility Guide](#-extensibility-guide)
    - [Adding a New Permitted Source Connector](#adding-a-new-permitted-job-connector)
    - [Adding New Curated Learning Resources](#adding-new-curated-learning-resources)
 10. [Limitations, Privacy & Ethical Compliance](#-limitations-privacy--ethical-compliance)
+11. [Production Deployment & Database Persistence (Render Free Tier)](#-production-deployment--database-persistence-render-free-tier)
 
 ---
 
@@ -82,16 +84,16 @@ flowchart TD
 | :--- | :--- | :--- | :--- |
 | **Backend Framework** | **FastAPI** | `^0.115.0` | High-performance asynchronous REST API framework |
 | **Language** | **Python** | `3.10+` (tested on `3.13`) | Core backend runtime and natural language processing |
-| **Database & ORM** | **SQLAlchemy** + **SQLite** | `^2.0.0` | Relational models, cascade foreign keys, local persistence |
+| **Database & ORM** | **SQLAlchemy** + **PostgreSQL** / **SQLite** | `^2.0.0` | Relational models, connection pooling, SQLite for dev, PostgreSQL (`psycopg2-binary`) for production persistence |
 | **Password Security** | **Argon2id** (`pwdlib`) | `^0.2.0` | Modern, GPU-resistant memory-hard password hashing |
-| **Authentication** | **PyJWT** | `^2.10.0` | Stateless HMAC-SHA256 bearer tokens with 30m expiry |
+| **Authentication** | **PyJWT** | `^2.10.0` | Stateless HMAC-SHA256 bearer tokens with 7-day session persistence |
 | **Web Scraping / Sanitization** | **BeautifulSoup4** | `^4.12.0` | Strips tags, scripts, and normalizes block-level whitespace |
-| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 61 isolated in-memory automated unit and e2e integration tests |
+| **Test Suite** | **pytest**, **httpx** | `^9.0.0` | 72 isolated in-memory automated unit and e2e integration tests |
 | **Frontend Framework** | **React** | `^18.3.1` | Declarative component UI library |
 | **Build Tool & Dev Server**| **Vite** | `^6.0.0` | Instant HMR and high-speed ES-module bundler |
 | **Styling** | **Tailwind CSS** | `^4.0.0` | Modern utility-first CSS via `@tailwindcss/vite` |
 | **Routing** | **React Router** | `^6.28.0` | Client-side routing with authentication guards |
-| **HTTP Client** | **Axios** | `^1.7.9` | Request/response interceptors with automatic JWT injection |
+| **HTTP Client** | **Axios** | `^1.7.9` | Request/response interceptors with JWT injection & 75s cold-start timeout |
 | **Icons** | **Lucide React** | `^0.475.0` | Accessible, consistent iconography |
 
 ---
@@ -107,7 +109,9 @@ e:\Skill Analyzer\
 │   │   │   ├── greenhouse.py       # Greenhouse public board API connector
 │   │   │   └── lever.py            # Lever public board API connector
 │   │   ├── models/                 # SQLAlchemy relational ORM models
-│   │   │   ├── user.py             # Users table with Argon2 hashes
+│   │   │   ├── user.py             # Users table with Argon2 hashes & relationships
+│   │   │   ├── student_profile.py  # Student profile (degree, graduation, bio, mobile, avatar)
+│   │   │   ├── password_reset.py   # Secure single-use hashed reset tokens
 │   │   │   ├── analysis.py         # Analyses table (employer, role, study hours)
 │   │   │   ├── student_skill.py    # Self-reported student skills & proficiency
 │   │   │   ├── job_snapshot.py     # Verified posting snapshots, hashes & URLs
@@ -118,44 +122,53 @@ e:\Skill Analyzer\
 │   │   │   ├── archived_job_snapshots.json # Verified historical postings archive (Approach 1)
 │   │   │   └── industry_role_benchmarks.json # Standard technical competency frameworks (Approach 2)
 │   │   ├── routes/                 # FastAPI API route controllers
-│   │   │   ├── health.py           # /api/health with SELECT 1 SQLite probe
-│   │   │   ├── auth.py             # /api/auth/register, login, me
+│   │   │   ├── health.py           # /api/health with database probe
+│   │   │   ├── auth.py             # /api/auth/register, login, me, forgot/reset-password
+│   │   │   ├── profile.py          # GET/PUT /api/profile student profile endpoints
 │   │   │   ├── analyses.py         # CRUD analyses, job search, gap analysis
 │   │   │   └── roadmap.py          # GET/POST /api/analyses/{id}/roadmap, PATCH item
 │   │   ├── schemas/                # Pydantic v2 validation models
+│   │   │   ├── profile.py          # Student profile view/update schemas
+│   │   │   ├── password_reset.py   # Forgot/reset password request schemas
+│   │   │   └── analysis.py         # Analysis requests with IT domain role validator
 │   │   ├── security/               # Password hashing, JWT creation & auth dependencies
 │   │   ├── services/               # Core business logic engines
+│   │   │   ├── role_validator.py   # IT role domain classifier, non-IT rejection & typo tolerance
+│   │   │   ├── email_service.py    # SMTP email sender with dev console fallback
 │   │   │   ├── skill_normalizer.py # Canonical alias normalizer
 │   │   │   ├── job_search_service.py # Multi-source aggregation & freshness
 │   │   │   ├── skill_extractor.py  # Regex disambiguation & evidence extractor
 │   │   │   ├── gap_analyzer.py     # Gap categorization & coverage metric
 │   │   │   └── roadmap_generator.py# Budget-bounded priority weekly scheduler
-│   │   ├── config.py               # Pydantic BaseSettings loading from .env
-│   │   ├── database.py             # SQLite engine & session maker
-│   │   └── main.py                 # FastAPI application factory & CORS setup
-│   ├── tests/                      # Automated test suite (61 passing tests)
+│   │   ├── config.py               # Pydantic BaseSettings loading from .env (auto-normalizes postgres://)
+│   │   ├── database.py             # SQLAlchemy engine with pool_pre_ping & connection recycling
+│   │   └── main.py                 # FastAPI application factory, CORS & route registration
+│   ├── tests/                      # Automated test suite (72 passing tests)
 │   │   ├── conftest.py             # In-memory SQLite fixtures & TestClient
-│   │   ├── test_health.py          # Health-check probe tests
-│   │   ├── test_auth.py            # Registration, login, JWT validation tests
-│   │   ├── test_analyses.py        # Analysis CRUD, ownership scoping tests
-│   │   ├── test_connectors.py      # Greenhouse ATS integration & cleaning tests
-│   │   ├── test_lever_and_aggregation.py # Lever ATS & multi-source dedup tests
-│   │   ├── test_skill_extraction_and_gap.py # Skill regex disambiguation & gap tests
-│   │   ├── test_roadmap.py         # Weekly hour budget & curriculum tests
-│   │   ├── test_e2e_workflow.py    # Comprehensive full-student journey e2e test
-│   │   └── test_cached_snapshots.py # Cached snapshots, benchmarks & paste flow tests (12 tests)
+│   │   ├── test_health.py          # Health-check probe tests (2 tests)
+│   │   ├── test_auth.py            # Registration, login, JWT validation tests (9 tests)
+│   │   ├── test_profile.py         # Student profile GET/PUT and auth isolation tests (4 tests)
+│   │   ├── test_password_reset.py  # Forgot password, token hashing & reset tests (4 tests)
+│   │   ├── test_analyses.py        # Analysis CRUD, ownership scoping tests (7 tests)
+│   │   ├── test_connectors.py      # Greenhouse ATS integration & cleaning tests (5 tests)
+│   │   ├── test_lever_and_aggregation.py # Lever ATS & multi-source dedup tests (10 tests)
+│   │   ├── test_skill_extraction_and_gap.py # Skill regex disambiguation & gap tests (11 tests)
+│   │   ├── test_roadmap.py         # Weekly hour budget & curriculum tests (5 tests)
+│   │   ├── test_cached_snapshots.py # Snapshots, benchmarks & role rejection tests (14 tests)
+│   │   └── test_e2e_workflow.py    # Comprehensive full-student journey e2e test (1 test)
 │   ├── .env.example                # Backend configuration template
 │   ├── pytest.ini                  # Pytest configuration & warning filters
-│   └── requirements.txt            # Python dependencies
+│   └── requirements.txt            # Python dependencies (includes psycopg2-binary)
 ├── frontend/
 │   ├── src/
 │   │   ├── api/                    # Axios instances & endpoint services
-│   │   │   ├── axios.js            # Axios client with bearer token interceptor
-│   │   │   ├── auth.js             # Auth endpoints
+│   │   │   ├── axios.js            # Axios client with 75s timeout & bearer interceptor
+│   │   │   ├── auth.js             # Auth, forgot-password & reset-password endpoints
+│   │   │   ├── profile.js          # Profile GET/PUT endpoints
 │   │   │   ├── analyses.js         # Analyses & job search endpoints
 │   │   │   └── roadmap.js          # Roadmap & progress tracking endpoints
 │   │   ├── components/             # Reusable UI components
-│   │   │   ├── Navbar.jsx          # Header navigation with user status & logout
+│   │   │   ├── Navbar.jsx          # Header navigation with profile link & avatar badge
 │   │   │   ├── ProtectedRoute.jsx  # Auth guard routing wrapper
 │   │   │   ├── SkillCard.jsx       # Evidence-backed requirement card
 │   │   │   ├── JobSourceCard.jsx   # Verified job source card with link & badge
@@ -163,10 +176,13 @@ e:\Skill Analyzer\
 │   │   │   ├── LoadingState.jsx    # Animated loading spinner with message
 │   │   │   └── ErrorState.jsx      # Error banner with retry trigger
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx     # User state provider & session persistence
+│   │   │   └── AuthContext.jsx     # User state provider & resilient session persistence
 │   │   ├── pages/                  # Top-level view routes
-│   │   │   ├── Login.jsx           # Student login screen
+│   │   │   ├── Login.jsx           # Student login with Render warm-up banner & reset alerts
 │   │   │   ├── Register.jsx        # Student registration screen
+│   │   │   ├── ForgotPassword.jsx  # Password reset request screen
+│   │   │   ├── ResetPassword.jsx   # Secure token-based password reset screen
+│   │   │   ├── Profile.jsx         # Student profile management UI (avatars, bio, academics)
 │   │   │   ├── Dashboard.jsx       # Student analyses portfolio & creation link
 │   │   │   ├── NewAnalysis.jsx     # Free-text form for employer, role & skills
 │   │   │   ├── AnalysisResult.jsx  # Verified jobs, evidence quotes & gap results
@@ -247,7 +263,7 @@ npm run dev
 
 ## 🧪 Automated Test Suite
 
-The test suite runs 49 automated tests in an isolated, in-memory SQLite database environment without affecting your local database.
+The test suite runs **72 automated tests** in an isolated, in-memory SQLite database environment without affecting your local database.
 
 In **Terminal 1** (with virtual environment activated):
 
@@ -256,12 +272,85 @@ In **Terminal 1** (with virtual environment activated):
 pytest -v -c backend/pytest.ini backend/tests
 ```
 
-### Verified Test Suite Breakdown (61 Passing Tests)
+### Verified Test Suite Breakdown (72 Passing Tests)
 
 ```text
+backend/tests/test_health.py (2 tests)
+  ✓ test_health_check_returns_ok_with_database_connected
+  ✓ test_health_check_database_unhealthy
+
+backend/tests/test_auth.py (9 tests)
+  ✓ test_register_success
+  ✓ test_register_duplicate_email
+  ✓ test_register_weak_password
+  ✓ test_register_invalid_email
+  ✓ test_login_success
+  ✓ test_login_wrong_password
+  ✓ test_login_nonexistent_email
+  ✓ test_get_me_authenticated
+  ✓ test_get_me_unauthorized
+
+backend/tests/test_profile.py (4 tests)
+  ✓ test_get_profile_auto_initializes_empty_profile
+  ✓ test_update_profile_success
+  ✓ test_update_profile_validation_errors
+  ✓ test_profile_requires_authentication
+
+backend/tests/test_password_reset.py (4 tests)
+  ✓ test_forgot_password_always_returns_neutral_success
+  ✓ test_reset_password_success
+  ✓ test_reset_password_invalid_or_expired_token
+  ✓ test_reset_password_mismatched_confirmation
+
 backend/tests/test_analyses.py (7 tests)
-...
-backend/tests/test_cached_snapshots.py (12 tests)
+  ✓ test_create_analysis_success
+  ✓ test_create_analysis_invalid_hours
+  ✓ test_list_analyses_user_scoped
+  ✓ test_get_analysis_by_id_owner
+  ✓ test_get_analysis_by_id_idor_prevented
+  ✓ test_delete_analysis_cascades
+  ✓ test_delete_analysis_idor_prevented
+
+backend/tests/test_connectors.py (5 tests)
+  ✓ test_greenhouse_connector_success
+  ✓ test_greenhouse_connector_company_not_found
+  ✓ test_greenhouse_token_relevance_filter
+  ✓ test_html_sanitizer_cleans_tags_and_whitespace
+  ✓ test_token_relevance_scorer_boundary_conditions
+
+backend/tests/test_lever_and_aggregation.py (10 tests)
+  ✓ test_lever_connector_success
+  ✓ test_lever_connector_company_not_found
+  ✓ test_lever_token_relevance_filter
+  ✓ test_aggregation_combines_sources
+  ✓ test_aggregation_deduplicates_identical_roles
+  ✓ test_aggregation_freshness_policy
+  ✓ test_aggregation_company_not_verified_status
+  ✓ test_aggregation_source_unavailable_status
+  ✓ test_aggregation_no_matching_jobs_status
+  ✓ test_api_search_jobs_flow
+
+backend/tests/test_skill_extraction_and_gap.py (11 tests)
+  ✓ test_extract_skills_from_posting
+  ✓ test_disambiguation_c_plus_plus_and_c_sharp
+  ✓ test_disambiguation_r_and_go
+  ✓ test_requirement_level_classification
+  ✓ test_gap_analysis_calculates_coverage
+  ✓ test_gap_analysis_missing_skills
+  ✓ test_gap_analysis_needs_improvement
+  ✓ test_gap_analysis_additional_skills
+  ✓ test_gap_analysis_zero_required_skills_guard
+  ✓ test_api_run_gap_analysis_flow
+  ✓ test_api_run_gap_analysis_requires_verified_jobs
+
+backend/tests/test_roadmap.py (5 tests)
+  ✓ test_generate_roadmap_budget_bounded
+  ✓ test_roadmap_prioritizes_missing_required_skills
+  ✓ test_api_generate_and_fetch_roadmap_flow
+  ✓ test_api_update_roadmap_item_status
+  ✓ test_roadmap_requires_analysis_owner
+
+backend/tests/test_cached_snapshots.py (14 tests)
   ✓ test_find_cached_snapshots_from_catalog
   ✓ test_find_cached_snapshots_from_database_precedence
   ✓ test_apply_cached_snapshot_to_analysis
@@ -274,6 +363,9 @@ backend/tests/test_cached_snapshots.py (12 tests)
   ✓ test_find_cached_snapshots_deloitte_and_mastercard
   ✓ test_typo_tolerant_role_matching
   ✓ test_disjunctive_programming_language_alternative_handling
+  ✓ test_unregistered_company_produces_no_generic_skills
+  ✓ test_invalid_and_non_it_job_roles_rejected
+
 backend/tests/test_e2e_workflow.py (1 test)
   ✓ test_full_student_e2e_journey (Complete end-to-end integration lifecycle)
 ```
@@ -325,6 +417,73 @@ All protected endpoints require an `Authorization: Bearer <token>` header.
 - **Auth**: Bearer Token
 - **Response**: `200 OK` (Current student profile, never returning password hash)
 
+#### `POST /api/auth/forgot-password`
+- **Auth**: None
+- **Payload**:
+  ```json
+  {
+    "email": "sarah.student@university.edu"
+  }
+  ```
+- **Action**: Generates a cryptographically random, single-use reset token valid for 15 minutes. The token is hashed with SHA-256 before storing in the database. Dispatches an email via SMTP (or prints to server logs in local dev). Returns a neutral message to prevent user enumeration attacks.
+- **Response**: `200 OK`
+  ```json
+  {
+    "message": "If an account exists with this email address, a password reset link has been sent."
+  }
+  ```
+
+#### `POST /api/auth/reset-password`
+- **Auth**: None
+- **Payload**:
+  ```json
+  {
+    "token": "48_char_secure_random_hex_token",
+    "new_password": "NewSecurePassword456!",
+    "confirm_password": "NewSecurePassword456!"
+  }
+  ```
+- **Action**: Validates token existence, expiration, and unused status. Re-hashes the new password with Argon2id, invalidates the token, and updates the user account.
+- **Response**: `200 OK`
+  ```json
+  {
+    "message": "Password has been successfully reset. You may now log in with your new password."
+  }
+  ```
+
+---
+
+### Student Profile Endpoints
+
+#### `GET /api/profile`
+- **Auth**: Bearer Token
+- **Action**: Retrieves the authenticated student's profile details. Automatically initializes an empty profile on first visit.
+- **Response**: `200 OK`
+  ```json
+  {
+    "id": 1,
+    "user_id": 1,
+    "email": "sarah.student@university.edu",
+    "name": "Sarah Student",
+    "mobile_number": "+1 555-0199",
+    "college_name": "University of Technology",
+    "degree": "Bachelor of Technology (B.Tech)",
+    "specialization": "Computer Science & Engineering",
+    "graduation_year": 2027,
+    "study_hours_per_week": 15,
+    "avatar_url": "https://api.dicebear.com/7.x/bottts/svg?seed=Sarah",
+    "bio": "Aspiring Cloud Backend Engineer passionate about distributed systems.",
+    "skills": ["Python", "Docker", "PostgreSQL"],
+    "created_at": "2026-10-25T12:00:00Z",
+    "updated_at": "2026-10-26T14:30:00Z"
+  }
+  ```
+
+#### `PUT /api/profile`
+- **Auth**: Bearer Token
+- **Action**: Updates the student profile fields (email is read-only). Enforces graduation year range (1970–2040), max 100 study hours/week, and max 50 skills.
+- **Response**: `200 OK` (Returns updated profile JSON)
+
 ---
 
 ### Analysis Endpoints
@@ -343,6 +502,9 @@ All protected endpoints require an `Authorization: Bearer <token>` header.
     ]
   }
   ```
+- **Validation**: Enforces IT & technology domain role validation (`validate_it_role`). Rejects non-IT professions (e.g. `Civil Engineer`, `Medical Doctor`, `Accountant`) and nonsensical inputs (e.g. `Quantum Banana Analyst 987654`) with HTTP 422:
+  `"This job role is invalid or is not currently supported by our IT and technology job analysis system. Please enter a valid IT or technology-related job role."`
+  Accepts arbitrary valid free-text tech titles (e.g., `Site Reliability Engineer`, `Full Stack Developer`, `Junior Systems Apprentice`) with typo-tolerant matching (e.g., `Anaylst`).
 - **Response**: `201 Created` with initialized analysis entity (`status: "pending"`).
 
 #### `GET /api/analyses`
@@ -530,6 +692,24 @@ A common defect in learning roadmaps is overloading students with unrealistic sc
 
 ---
 
+### 5. IT Domain Role Validation & Typo Tolerance
+
+To maintain domain accuracy and prevent nonsensical IT skill extraction for non-IT occupations, the system includes an IT domain role validator (`app/services/role_validator.py`):
+
+1. **Non-IT Profession Filtering**:
+   Explicitly checks against known non-IT occupations (e.g., `Civil Engineer`, `Medical Doctor`, `Registered Nurse`, `Accountant`, `Electrician`, `Chef`, `Lawyer`, `Pilot`).
+2. **Nonsense & Gibberish Filtering**:
+   Rejects inputs containing nonsense words (e.g., `banana`, `quantum banana`), random digit sequences (e.g., `987654`), or excessive non-alphanumeric characters.
+3. **Free-Text IT Domain Matcher**:
+   Rather than restricting students to a small hardcoded drop-down, the engine allows arbitrary free-text tech titles (e.g. `Site Reliability Engineer`, `Full Stack Developer`, `Junior Systems Apprentice`, `Cloud Architect`, `DevOps Specialist`).
+4. **Typo Tolerance**:
+   Incorporates normalized edit-distance matching (Levenshtein/difflib ratio $\ge 0.8$) so common student typos (e.g., `Anaylst`, `Develper`) are recognized as valid tech roles.
+5. **Exact Rejection Specification**:
+   When an invalid or non-IT role is entered, the API immediately halts with HTTP 422:
+   > *"This job role is invalid or is not currently supported by our IT and technology job analysis system. Please enter a valid IT or technology-related job role."*
+
+---
+
 ## 🔌 Extensibility Guide
 
 ### Adding a New Permitted Job Connector
@@ -596,6 +776,56 @@ Every resource MUST be genuinely free, without paywalls or hidden trial credit r
    Regex and rule-based extraction provide explainable evidence tracing without non-deterministic LLM hallucinations. However, unusual phrasing or novel slang may not match the taxonomy. The catalog is continuously expandable.
 4. **Guidepost Disclaimer**:
    Effort estimates (hours per topic) and the skill coverage metric are illustrative educational guidelines designed for self-study planning. They do not constitute a formal accreditation or hiring guarantee.
+
+---
+
+## ☁️ Production Deployment & Database Persistence (Render Free Tier)
+
+When deploying on Render's free tier, understanding container lifecycle and data persistence is critical to prevent user accounts from disappearing.
+
+### Root Cause of Missing Accounts on Render Free Tier
+
+Render Web Services run inside **ephemeral Docker containers**:
+1. When a free web service receives no traffic for 15 minutes, Render spins down the container to 0 instances.
+2. When a new request arrives, Render spins up a **brand-new container** with a fresh file system.
+3. If SQLite (`sqlite:///./app.db`) is used on a Web Service without a persistent disk, **the database file is wiped on every spin-down or redeploy**.
+4. Consequently, any student accounts registered on the previous container instance vanish, and subsequent logins fail.
+
+### Solution: Free Render PostgreSQL Database
+
+Render provides a free managed PostgreSQL database with persistent storage that survives container restarts.
+
+#### Step 1: Create a PostgreSQL Instance on Render
+1. Log in to the [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** > **PostgreSQL**.
+3. Set a name (e.g., `skill-analyzer-db`) and select the **Free** tier.
+4. Click **Create Database**.
+
+#### Step 2: Configure Environment Variables in the Web Service
+1. In your Render PostgreSQL dashboard, copy the **Internal Database URL** (e.g., `postgres://user:password@dpg-xxx:5432/dbname`).
+2. Go to your **Backend Web Service** settings on Render > **Environment**.
+3. Add or update the following environment variables:
+
+| Variable | Recommended Value | Purpose |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | `postgres://user:pass@dpg-xxx:5432/dbname` | Render Internal Database URL. The backend automatically normalizes `postgres://` to `postgresql://` and configures connection pooling (`pool_pre_ping=True`, `pool_recycle=300`). |
+| `JWT_SECRET` | *(64-character random string)* | Strong cryptographic secret for signing bearer tokens. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `10080` | Sets JWT session validity to 7 days, preventing premature student logouts. |
+| `FRONTEND_ORIGIN` | `https://your-frontend.onrender.com` | Allowed CORS origin for the React SPA. |
+| `SMTP_HOST` | *(Optional, e.g., `smtp.gmail.com`)* | Host for outgoing password reset emails. |
+| `SMTP_PORT` | `587` | Port for TLS email dispatch. |
+| `SMTP_USER` | *(Optional, e.g., `your-email@gmail.com`)* | SMTP authentication email. |
+| `SMTP_PASSWORD` | *(Optional, e.g., Google App Password)* | SMTP application password. |
+| `SMTP_FROM_EMAIL` | `noreply@skillanalyzer.dev` | From header for password reset emails. |
+
+> [!NOTE]
+> If SMTP credentials are not configured, password reset tokens are safely logged to the backend service stdout/console logs for convenient testing.
+
+#### Step 3: Frontend Cold-Start Protection
+Render free web services spin down after inactivity and take 30–50 seconds to warm up on the first request. The frontend includes:
+- An increased Axios timeout of **75 seconds** (`frontend/src/api/axios.js`), preventing premature request abortion.
+- A dynamic warm-up banner on the Login screen informing students if the server takes longer than 4 seconds to respond.
+- Resilient auth initialization in `AuthContext.jsx` that preserves local credentials during transient connection timeouts.
 
 ---
 

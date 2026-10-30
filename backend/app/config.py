@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Locate .env file relative to this file: backend/.env
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
         validation_alias="JWT_SECRET",
     )
     access_token_expire_minutes: int = Field(
-        default=30,
+        default=10080,  # 7 days (10080 minutes) to ensure persistent student sessions across visits
         validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES",
     )
     frontend_origin: str = Field(
@@ -31,12 +31,36 @@ class Settings(BaseSettings):
         validation_alias="JOB_FRESHNESS_DAYS",
         description="Threshold in days after which a posting is flagged as stale",
     )
+    # Optional SMTP configuration for email delivery
+    smtp_host: str | None = Field(default=None, validation_alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, validation_alias="SMTP_PORT")
+    smtp_user: str | None = Field(default=None, validation_alias="SMTP_USER")
+    smtp_password: str | None = Field(default=None, validation_alias="SMTP_PASSWORD")
+    smtp_from_email: str = Field(
+        default="noreply@skillgap.analyzer",
+        validation_alias="SMTP_FROM_EMAIL",
+    )
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_PATH) if ENV_PATH.exists() else ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        # 1. Normalize Render/Heroku postgres:// URLs to postgresql://
+        if v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql://", 1)
+        # 2. Fix relative SQLite paths to always point to BASE_DIR / app.db
+        if v.startswith("sqlite:///") and not v.startswith("sqlite:////") and ":memory:" not in v:
+            relative_path = v.replace("sqlite:///", "")
+            if relative_path.startswith("./") or not Path(relative_path).is_absolute():
+                clean_rel = relative_path.lstrip("./")
+                abs_db_path = (BASE_DIR / clean_rel).resolve()
+                v = f"sqlite:///{abs_db_path.as_posix()}"
+        return v
 
     @property
     def is_production(self) -> bool:

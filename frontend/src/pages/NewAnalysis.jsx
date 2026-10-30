@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createAnalysis, searchJobs, pasteJobDescription, useCachedPosting, useIndustryBenchmark } from '../api/analyses';
+import { createAnalysis, searchJobs, pasteJobDescription } from '../api/analyses';
 import { Building2, Briefcase, Clock, Plus, Trash2, ArrowRight, AlertCircle, Info, Sparkles, FileText } from 'lucide-react';
 
 const NewAnalysis = () => {
@@ -78,16 +78,7 @@ const NewAnalysis = () => {
         });
       } else {
         setProgressStep(`Searching live ATS sources (Greenhouse & Lever) for verified ${companyName.trim()} postings...`);
-        const searchRes = await searchJobs(created.id);
-        if (searchRes.status === 'company_not_verified') {
-          if (searchRes.has_cached_snapshots) {
-            setProgressStep(`Attaching verified ${companyName.trim()} archive posting...`);
-            await useCachedPosting(created.id);
-          } else if (searchRes.has_industry_benchmark) {
-            setProgressStep(`Attaching standard industry competency framework for ${targetRole.trim()}...`);
-            await useIndustryBenchmark(created.id);
-          }
-        }
+        await searchJobs(created.id);
       }
 
       navigate(`/analyses/${created.id}`);

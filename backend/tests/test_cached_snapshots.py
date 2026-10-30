@@ -442,3 +442,125 @@ def test_disjunctive_programming_language_alternative_handling(client):
     assert "sql" in scheduled_skills
 
 
+def test_unregistered_company_produces_no_generic_skills(client):
+    """
+    BUG-003 Verification:
+    Entering a nonexistent or unverified company MUST NOT automatically fabricate
+    or attach generic skills or generate a skill-gap analysis.
+    """
+    reg = client.post(
+        "/api/auth/register",
+        json={"name": "Company Tester", "email": "company.tester@university.edu", "password": "SecurePassword123!"},
+    )
+    assert reg.status_code == 201
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    create_res = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "XYZ_Nonexistent_Company_987654",
+            "target_role": "Data Analyst",
+            "weekly_hours": 10,
+        },
+    )
+    assert create_res.status_code == 201
+    analysis_id = create_res.json()["id"]
+
+    search_res = client.post(f"/api/analyses/{analysis_id}/search-jobs", headers=headers)
+    assert search_res.status_code == 200
+    search_data = search_res.json()
+    assert search_data["status"] == "company_not_verified"
+    assert search_data["jobs"] == []
+
+    # Verify no generic skills or snapshots are attached
+    get_res = client.get(f"/api/analyses/{analysis_id}", headers=headers)
+    assert get_res.status_code == 200
+    assert len(get_res.json()["job_snapshots"]) == 0
+
+    # Running gap analysis without verified postings MUST fail
+    gap_res = client.post(f"/api/analyses/{analysis_id}/run-gap-analysis", headers=headers)
+    assert gap_res.status_code == 400
+
+    # Generating roadmap without verified postings MUST fail
+    roadmap_res = client.post(f"/api/analyses/{analysis_id}/roadmap", headers=headers)
+    assert roadmap_res.status_code == 400
+
+
+def test_invalid_and_non_it_job_roles_rejected(client):
+    """
+    BUG-004 Verification:
+    Invalid job roles (e.g. 'Quantum Banana Analyst 987654') and non-IT roles
+    (e.g. 'Civil Engineer', 'Medical Doctor') must be rejected with the exact specified message.
+    """
+    reg = client.post(
+        "/api/auth/register",
+        json={"name": "Role Tester", "email": "role.tester@university.edu", "password": "SecurePassword123!"},
+    )
+    assert reg.status_code == 201
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    # 1. Invalid gibberish role
+    res1 = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Google",
+            "target_role": "Quantum Banana Analyst 987654",
+            "weekly_hours": 10,
+        },
+    )
+    assert res1.status_code == 422
+    assert "not currently supported by our IT and technology job analysis system" in res1.text
+
+    # 2. Non-IT role: Civil Engineer
+    res2 = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Google",
+            "target_role": "Civil Engineer",
+            "weekly_hours": 10,
+        },
+    )
+    assert res2.status_code == 422
+    assert "not currently supported by our IT and technology job analysis system" in res2.text
+
+    # 3. Non-IT role: Medical Doctor
+    res3 = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Google",
+            "target_role": "Medical Doctor",
+            "weekly_hours": 10,
+        },
+    )
+    assert res3.status_code == 422
+    assert "not currently supported by our IT and technology job analysis system" in res3.text
+
+    # 4. Valid IT roles must succeed
+    res4 = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Google",
+            "target_role": "Data Analyst",
+            "weekly_hours": 10,
+        },
+    )
+    assert res4.status_code == 201
+
+    res5 = client.post(
+        "/api/analyses",
+        headers=headers,
+        json={
+            "company_name": "Google",
+            "target_role": "Cloud Solutions Architect",
+            "weekly_hours": 10,
+        },
+    )
+    assert res5.status_code == 201
+
+
+

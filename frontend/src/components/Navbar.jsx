@@ -45,6 +45,14 @@ const Navbar = () => {
                 >
                   New Analysis
                 </Link>
+                <Link
+                  to="/profile"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    isActive('/profile') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  Profile
+                </Link>
               </div>
             )}
           </div>
@@ -59,12 +67,16 @@ const Navbar = () => {
                   <PlusCircle className="w-4 h-4" />
                   <span>Start Analysis</span>
                 </Link>
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-200 text-slate-700 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                    <UserIcon className="w-4 h-4" />
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 pl-2 border-l border-slate-200 text-slate-700 text-sm hover:text-blue-600 transition"
+                  title="View your student profile"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-700 font-semibold text-xs flex items-center justify-center border border-blue-200">
+                    {(user?.name || 'S').charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden lg:inline font-medium text-slate-800">{user?.name}</span>
-                </div>
+                  <span className="hidden lg:inline font-medium text-slate-800 hover:text-blue-600">{user?.name}</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   title="Sign out"

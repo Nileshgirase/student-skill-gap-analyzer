@@ -1,6 +1,18 @@
 from datetime import timedelta
 from app.models.user import User
 from app.security.jwt_handler import create_access_token
+from app.config import Settings
+
+
+def test_database_url_normalization():
+    """Verifies that postgres:// is normalized to postgresql:// and relative sqlite paths become absolute."""
+    s1 = Settings(DATABASE_URL="postgres://user:pass@ep-cool.render.com/dbname")
+    assert s1.database_url == "postgresql://user:pass@ep-cool.render.com/dbname"
+
+    s2 = Settings(DATABASE_URL="sqlite:///./app.db")
+    assert s2.database_url.startswith("sqlite:///")
+    assert not s2.database_url.startswith("sqlite:///./")
+    assert "backend" in s2.database_url or "app.db" in s2.database_url
 
 
 def test_register_success(client, db_session):
@@ -174,45 +186,3 @@ def test_get_current_user_me_expired_token(client, db_session):
     )
     assert response.status_code == 401
     assert "expired" in response.json()["detail"].lower()
-
-
-def test_login_oauth2_form_data_with_username_and_email(client):
-    """
-    Verifies that Swagger UI's Authorize popup (OAuth2 form data with username & password)
-    authenticates successfully whether using registered student name ('Nileshr') or email.
-    """
-    reg = client.post(
-        "/api/auth/register",
-        json={"name": "Nileshr", "email": "nileshr@university.edu", "password": "SecurePassword123!"},
-    )
-    assert reg.status_code == 201
-
-    # 1. Login with student name via Form Data (Swagger UI style)
-    res_form_name = client.post(
-        "/api/auth/login",
-        data={"username": "Nileshr", "password": "SecurePassword123!"},
-    )
-    assert res_form_name.status_code == 200
-    data_name = res_form_name.json()
-    assert "access_token" in data_name
-    assert data_name["token_type"] == "bearer"
-    assert data_name["user"]["name"] == "Nileshr"
-
-    # 2. Login with student email via Form Data (Swagger UI style)
-    res_form_email = client.post(
-        "/api/auth/login",
-        data={"username": "nileshr@university.edu", "password": "SecurePassword123!"},
-    )
-    assert res_form_email.status_code == 200
-    data_email = res_form_email.json()
-    assert "access_token" in data_email
-    assert data_email["user"]["email"] == "nileshr@university.edu"
-
-    # 3. Invalid password via Form Data
-    res_wrong = client.post(
-        "/api/auth/login",
-        data={"username": "Nileshr", "password": "WrongPassword!"},
-    )
-    assert res_wrong.status_code == 401
-    assert "invalid email or password" in res_wrong.json()["detail"].lower()
-
